@@ -45,6 +45,24 @@ reference-odds ───┘           ▲                                   │
 | `oddsen-news-check` | Checks lineups, injuries and suspensions before a bet, since late news is the main reason a "value" price is actually just stale. |
 | `oddsen-session-check` | Start-of-session check: bankroll, limits, recent results, and a gentle stop if staking rules have been broken. |
 
+## Phase 5: Tipping coupons (pool game)
+
+Design: [`COUPON-ARCHITECTURE.md`](COUPON-ARCHITECTURE.md). Pool math: `shared/tipping-pool-math.md`. Zero-config: no API keys, no login; anonymous public data only. Different problem from Phases 1-4: the edge is picking outcomes the public under-backs, and Kelly does not apply.
+
+| Skill | What it does |
+|---|---|
+| `oddsen-tipping-fixtures` | Reads the open coupon (matches, deadline, row price) from public sources, with pasted-coupon fallback. |
+| `oddsen-tipping-market-odds` | Public 1X2 odds from several books, matched across sources by normalised team names. |
+| `oddsen-tipping-public-split` | Public distribution ("folkets fordeling") per match; odds-implied crowd model if unpublished. |
+| `oddsen-tipping-team-context` | Form, H2H, standings, absences, rotation risk, weather, all with sources. |
+| `oddsen-tipping-probability-engine` | De-vigs each book, builds a weighted consensus and a spread/uncertainty measure. |
+| `oddsen-tipping-value-model` | Bounded, justified adjustments to the consensus; computes `p_est / public share`. |
+| `oddsen-tipping-coupon-optimizer` | Chooses single marks and half/full covers within a budget; reports `P(all correct)`. |
+| `oddsen-tipping-coupon-output` | Final recommendation: marks, confidence, reasoning, risks, cost in NOK and % of bankroll. |
+| `oddsen-tipping-coupon` | Orchestrator that runs the above; asks only for budget and bankroll. |
+
+Suggested build order: pool math + optimizer first (pure maths, testable offline), then fixtures with the pasted fallback, then odds and the probability engine, then public split and context.
+
 ## Decisions to make before Phase 2
 
 1. **Sports and leagues in scope** for v1 (suggestion: football only: Eliteserien, OBOS-ligaen, Premier League, Championship, top 5 leagues).
@@ -52,6 +70,14 @@ reference-odds ───┘           ▲                                   │
 3. **Reference odds provider** and whether users need their own API key (likely yes; document in each skill).
 4. **Where the journal lives:** local CSV (simple, private) vs. a Google Sheet / Claude artifact.
 5. **Default thresholds:** minimum edge, max stake %, max bets per day.
+
+## Decisions to make before Phase 5
+
+1. **Coupon products and rules (TO VERIFY):** which pool games, matches per coupon, row price, payout tiers, jackpot behaviour.
+2. **Public split availability:** does Norsk Tipping publish it per coupon, and where? If not, how to calibrate the crowd model.
+3. **Anonymous sources:** which public odds and fixtures endpoints are stable, and what Norsk Tipping's terms allow for automated reading.
+4. **Default coupon cap:** proposed 2 % of bankroll per coupon, user-overridable.
+5. **Prefix:** Tipping skills use `oddsen-tipping-` (recorded in CLAUDE.md).
 
 ## Status
 

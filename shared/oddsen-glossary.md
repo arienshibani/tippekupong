@@ -17,6 +17,21 @@ Terms as they appear on Norsk Tipping's Oddsen, with English meanings. Verify ag
 | **Tapsgrense** | Loss limit set on your Norsk Tipping account. |
 | **Spillepause** | Self-imposed break from playing. |
 
+## Tipping (pool games)
+
+Terms for the pool coupons (Tipping). Verify against the site.
+
+| Term | Meaning |
+|---|---|
+| **Tipping / tippekupong** | Pool game: predict 1X2 for a fixed list of matches; winners share a pool. |
+| **Rekke** | One row: a single full set of picks, one outcome per match. Priced per row. |
+| **Gardering** | Marking more than one outcome in a match, which multiplies the number of rows. |
+| **Halvgardering** | Half cover: two outcomes in a match (1X, X2 or 12). Doubles the rows. |
+| **Helgardering** | Full cover: all three outcomes (1X2) in a match. Triples the rows. |
+| **Spiker** | A single mark you are confident in (also "spikre": to lock in). |
+| **Folkets fordeling** | The public split: the share of players tipping each outcome per match. |
+| **Pott / pulje** | The pool of money paid out to winners. (TO VERIFY exact term used on the site.) |
+
 ## Notes on Oddsen as a bookmaker
 
 - Norsk Tipping is the state-owned operator and the only licensed sports betting provider in Norway.
