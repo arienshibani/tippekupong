@@ -47,7 +47,9 @@ except Exception:  # no tz database on this system: fall back to UTC-only displa
     OSLO = None
 
 OUTCOMES = ("H", "U", "B")
-MARK = {"H": "1", "U": "X", "B": "2"}
+MARK = {"H": "H", "U": "U", "B": "B"}  # the letters on the Norsk Tipping coupon page
+WEEKDAY_NO = ["Ma.", "Ti.", "On.", "To.", "Fr.", "Lø.", "Sø."]  # as the site writes them
+TICK, EMPTY = "■", "□"
 RISK_LABEL = {"safe": "cautious (maximise the hit chance)",
               "balanced": "balanced", "contrarian": "contrarian (favour under-backed outcomes)"}
 FORBIDDEN = re.compile(
@@ -86,6 +88,11 @@ def _time_or_none(text):
         return _time(text) if text else None
     except ValueError:
         return None
+
+
+def _kickoff_label(when):
+    local = when.astimezone(OSLO) if OSLO else when
+    return f"{WEEKDAY_NO[local.weekday()]} {local:%H:%M}"
 
 
 def _cell(text):
@@ -381,9 +388,9 @@ def build(data):
             when = _time(m["kickoff"])
         except (KeyError, TypeError, ValueError):
             return "n/a"
-        return f"{when.astimezone(OSLO) if OSLO else when:%a %H:%M}"
+        return _kickoff_label(when)
 
-    lines += ["", "| # | Match |" + (" Kick-off (Oslo) |" if has_kickoff else "") + " Mark | Cover | p (est) 1/X/2 | Public 1/X/2 | Why | Risk |",
+    lines += ["", "| # | Match |" + (" Kick-off |" if has_kickoff else "") + " Mark | Cover | p (est) H/U/B | Public H/U/B | Why | Risk |",
               "|---|---|" + ("---|" if has_kickoff else "") + "---|---|---|---|---|---|"]
     for pm in rec["marks"]:
         m = matches.get(pm["slot"])
@@ -392,12 +399,28 @@ def build(data):
             why.get(str(pm["slot"])) or _auto_why(pm, m), _risk_text(m)]
         lines.append("| " + " | ".join(_cell(x) for x in cells) + " |")
 
-    lines += ["", "Copy into your own coupon:", "", "```"]
-    grid = [(pm["slot"], f"{pm['slot']:>2}  {pm['mark']:<4} {pm['label']}") for pm in rec["marks"]]
-    grid += [(e["slot"], f"{e['slot']:>2}  ?    {e.get('label') or ''} (not analysed: mark it yourself)")
+    lines += ["", "Copy into your own coupon (the same layout as the coupon page; ■ = tick the box):", "", "```"]
+
+    def when_text(slot, entry=None):
+        m = matches.get(slot)
+        raw = (m or {}).get("kickoff") or (entry or {}).get("kickoff")
+        try:
+            return _kickoff_label(_time(raw)) if raw else ""
+        except (TypeError, ValueError):
+            return ""
+
+    grid = [(pm["slot"], pm["label"], when_text(pm["slot"]), [TICK if k in pm["outcomes"] else EMPTY for k in OUTCOMES], "")
+            for pm in rec["marks"]]
+    grid += [(e["slot"], e.get("label") or "", when_text(e["slot"], e), ["?", "?", "?"], "  (not analysed: mark it yourself)")
              for e in excluded]
-    lines += [line for _, line in sorted(grid, key=lambda g: g[0])]
+    grid.sort(key=lambda g: g[0])
+    width = min(max([len(g[1]) for g in grid] + [5]), 34)
+    lines.append(f"{'':>2}  {'':<{width}}  {'':<9}  H  U  B")
+    for slot, label, when, boxes, tail in grid:
+        lines.append(f"{slot:>2}  {label[:width]:<{width}}  {when:<9}  " + "  ".join(boxes) + tail)
     lines += ["```"]
+    lines += ["", f"H = hjemmeseier (home win), U = uavgjort (draw), B = borteseier (away win). After you tick the boxes, "
+                  f"\"Ditt system\" on the page should say **{rec['rows']} rekker** ({rec['cost_nok']:g} kr)."]
     if excluded:
         lines += ["", "**Not covered by this plan:**"]
         for e in excluded:

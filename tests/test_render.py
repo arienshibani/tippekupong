@@ -110,15 +110,70 @@ class UnanalysedMatches(unittest.TestCase):
         roomy = rnd.build(example(bankroll_nok=10000))["markdown"]
         self.assertIn("doubles the cost to 36 NOK (0.36 % of bankroll)", roomy)
 
+    def grid_lines(self, md):
+        block = md.split("```")[1].strip("\n").splitlines()
+        return block[0], block[1:]  # header line, one line per match
+
     def test_grid_has_a_placeholder_in_slot_order(self):
-        md = rnd.build(example())["markdown"]
-        grid = md.split("```")[1].strip().splitlines()
+        header, grid = self.grid_lines(rnd.build(example())["markdown"])
         self.assertEqual([int(line.split()[0]) for line in grid], [1, 2, 3, 4, 5, 6, 7])
         self.assertIn("not analysed: mark it yourself", grid[-1])
+        self.assertIn("?  ?  ?", grid[-1])
 
     def test_dropped_quote_reason_reaches_the_report_without_nested_brackets(self):
         md = rnd.build(example())["markdown"]
         self.assertIn("#7 Illustrative M - N: no usable market (Retail book (illustrative) - stale (8.0 h old))", md)
+
+
+class CouponPageLayout(unittest.TestCase):
+    """The report speaks the coupon page's language: H / U / B and boxes, not 1 / X / 2."""
+
+    def md(self):
+        return rnd.build(example())["markdown"]
+
+    def grid(self):
+        block = self.md().split("```")[1].strip("\n").splitlines()
+        return block[0], block[1:]
+
+    def test_no_one_x_two_notation_is_left_in_the_report(self):
+        md = self.md()
+        self.assertNotIn("1/X/2", md)
+        self.assertNotIn("1X2", md)
+        header, rows = self.grid()
+        self.assertTrue(header.rstrip().endswith("H  U  B"))
+
+    def test_boxes_follow_the_marks(self):
+        data = example()
+        marks = {m["slot"]: m for m in data["optimizer_result"]["plans"][-1]["marks"]}
+        header, rows = self.grid()
+        by_slot = {int(r.split()[0]): r for r in rows}
+        for slot, m in marks.items():
+            expected = "  ".join(rnd.TICK if k in m["outcomes"] else rnd.EMPTY for k in "HUB")
+            self.assertTrue(by_slot[slot].rstrip().endswith(expected), (slot, by_slot[slot], expected))
+
+    def test_columns_line_up_with_the_header(self):
+        header, rows = self.grid()
+        col = header.rindex("H")
+        for r in rows:
+            if "?" not in r:
+                self.assertIn(r[col], (rnd.TICK, rnd.EMPTY), r)
+
+    def test_kickoffs_are_written_as_the_site_writes_them(self):
+        header, rows = self.grid()
+        self.assertTrue(any("Sø. " in r or "Lø. " in r for r in rows))
+        self.assertNotIn("Sun ", self.md())
+
+    def test_check_line_says_what_ditt_system_should_show(self):
+        data = example()
+        rec = data["optimizer_result"]["plans"][-1]
+        self.assertIn(f"\"Ditt system\" on the page should say **{rec['rows']} rekker** ({rec['cost_nok']:g} kr)", self.md())
+        self.assertIn("H = hjemmeseier (home win), U = uavgjort (draw), B = borteseier (away win)", self.md())
+
+    def test_table_marks_are_letters(self):
+        md = self.md()
+        self.assertIn("| p (est) H/U/B | Public H/U/B |", md)
+        row = next(line for line in md.splitlines() if line.startswith("| 3 |"))
+        self.assertRegex(row, r"\*\*(H|U|B|HU|UB|HB|HUB)\*\*")
 
 
 class NewsAndRisk(unittest.TestCase):
@@ -292,14 +347,14 @@ class ReportWording(unittest.TestCase):
         self.assertEqual(why({"outcomes": ["H"]}, self.match((.6, .25, .15), (.6, .25, .15))), "likeliest outcome (60%)")
         self.assertIn("flat match, no outcome above 38%", why({"outcomes": ["H", "U", "B"]}, self.match((.38, .31, .31))))
         self.assertEqual(why({"outcomes": ["U", "H"]}, self.match((.40, .33, .27))), "the two likeliest outcomes")
-        self.assertIn("includes 2 (27%) because fewer tippers back it", why({"outcomes": ["H", "B"]}, self.match((.40, .33, .27))))
-        self.assertIn("not the likeliest (30% against 50% for 1)", why({"outcomes": ["B"]}, self.match((.5, .2, .3))))
+        self.assertIn("includes B (27%) because fewer tippers back it", why({"outcomes": ["H", "B"]}, self.match((.40, .33, .27))))
+        self.assertIn("not the likeliest (30% against 50% for H)", why({"outcomes": ["B"]}, self.match((.5, .2, .3))))
         self.assertNotIn("in line", why({"outcomes": ["H"]}, self.match((.5, .3, .2), (.5, .3, .2))))
 
     def test_auto_reason_flags_clearly_under_and_over_backed_outcomes_only(self):
         text = rnd._auto_why({"outcomes": ["H", "B"]}, self.match((.4, .3, .3), (.30, .30, .40)))
-        self.assertIn("1 is under-backed (public 30%)", text)
-        self.assertIn("2 is over-backed (public 40%)", text)
+        self.assertIn("H is under-backed (public 30%)", text)
+        self.assertIn("B is over-backed (public 40%)", text)
         mild = rnd._auto_why({"outcomes": ["H"]}, self.match((.4, .3, .3), (.36, .32, .32)))
         self.assertNotIn("backed", mild)
 

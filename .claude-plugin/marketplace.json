@@ -4,7 +4,7 @@
     "name": "Ari Enshibani"
   },
   "metadata": {
-    "description": "Claude skills for finding value bets on Oddsen (Norsk Tipping).",
+    "description": "Claude skills that build Norsk Tipping Tipping coupons from live data.",
     "version": "0.1.0"
   },
   "plugins": [

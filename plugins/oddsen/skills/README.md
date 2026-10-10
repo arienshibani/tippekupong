@@ -16,4 +16,4 @@ Start with `oddsen-tipping-coupon`: you say "bygg kupongen for søndag" with a b
 | `oddsen-tipping-coupon-optimizer` | Builds the coupon for the best expected payout across the 12, 11 and 10-correct prizes. |
 | `oddsen-tipping-coupon-output` | The report: marks, reasons, risks, chance of a prize, expected payout vs following the public, cost as a share of the bankroll. |
 
-See [docs/ROADMAP.md](../../../docs/ROADMAP.md) for what's planned, and [templates/SKILL.template.md](../../../templates/SKILL.template.md) to start one.
+To add a skill, start from [templates/SKILL.template.md](../../../templates/SKILL.template.md).

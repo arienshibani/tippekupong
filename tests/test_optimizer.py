@@ -169,8 +169,8 @@ class RiskPreference(unittest.TestCase):
         data = {"row_price_nok": 1, "budget_nok": 1, "matches": [m]}
         safe = opt.optimize(dict(data, risk="safe"))["plans"][-1]
         bold = opt.optimize(dict(data, risk="contrarian"))["plans"][-1]
-        self.assertEqual(safe["marks"][0]["mark"], "1")
-        self.assertEqual(bold["marks"][0]["mark"], "X")
+        self.assertEqual(safe["marks"][0]["mark"], "H")
+        self.assertEqual(bold["marks"][0]["mark"], "U")
 
     def test_missing_split_warns_and_is_neutral(self):
         data = {"row_price_nok": 1, "budget_nok": 2, "matches": [match([0.5, 0.3, 0.2])]}

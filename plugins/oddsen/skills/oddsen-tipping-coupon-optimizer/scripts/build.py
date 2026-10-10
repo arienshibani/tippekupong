@@ -53,7 +53,7 @@ import random
 import sys
 
 OUTCOMES = ("H", "U", "B")
-MARK = {"H": "1", "U": "X", "B": "2"}
+MARK = {"H": "H", "U": "U", "B": "B"}  # the letters on the coupon page
 RISK_ALIASES = {"safe": "prize-chance", "balanced": "balanced", "contrarian": "balanced"}
 GOALS = ("balanced", "prize-chance")
 TYPICAL_PRIZE = (1750.0, 90.0, 10.0)  # median prize per winner in 12 / 11 / 10 correct, last 60 rounds

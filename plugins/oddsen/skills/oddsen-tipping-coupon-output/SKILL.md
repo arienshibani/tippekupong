@@ -44,13 +44,13 @@ Turns the optimizer's plans and the value model's match data into the report the
 
 - Title with the round and date, deadline in Oslo time with time left, row price, strategy, bankroll, the pool.
 - **Recommended tier:** rows, cost in NOK and as a % of the bankroll; the chance of a prize (10, 11 or 12 correct) and of all 12; the expected payout per NOK with its standard error (differences under about 0.02 per NOK are noise), next to "follow the public" and "best chance of all 12" with their own row counts, and a verdict that follows the numbers ("a small edge" only if it beats the average ticket's 0.47 by at least 0.03; otherwise "about the same" or "below").
-- The per-match table (kick-off in Oslo time, mark, cover, estimated probabilities, public split, a short reason, risk) and a copyable grid. The reason is generated from the numbers and only says something beyond the table: the likeliest outcome, a flat match, a cover that includes a less likely outcome because fewer tippers back it, clearly under- or over-backed outcomes. Risk lists reasons for doubt (for example "no bookmaker odds") and notes (news applied), with "(low confidence)" at the end when it is low; a dash means nothing to flag.
+- The per-match table (kick-off in Oslo time, mark as H/U/B letters, cover, estimated probabilities, public split, a short reason, risk) and a copyable grid. The reason is generated from the numbers and only says something beyond the table: the likeliest outcome, a flat match, a cover that includes a less likely outcome because fewer tippers back it, clearly under- or over-backed outcomes. Risk lists reasons for doubt (for example "no bookmaker odds") and notes (news applied), with "(low confidence)" at the end when it is low; a dash means nothing to flag.
 - **Same budget, other strategies:** the balanced plan next to the prize-chance plan and the two comparison coupons; a line says when the two plans are within the margin of error of each other (then pick the mix of marks you prefer).
 - **Budget tiers**, **news used** (the applied adjustments with source and time), **what could be wrong**, **sources with times** and the closing text with the Hjelpelinjen number.
 - Matches that were not analysed are listed with the reason (a "?" in the grid); if there are any, the chance figures are labelled "analysed matches only".
 - Warnings for a stale source, a deadline under an hour away or passed, a plan above the cap (heading "Cheapest plan … not recommended"), and a plan that buys every possible row.
 
-Marks use coupon notation: `1` home win, `X` draw, `2` away win; `1X`, `X2`, `12` are half covers and `1X2` a full cover.
+Marks use the letters on Norsk Tipping's coupon page: `H` (hjemmeseier, home win), `U` (uavgjort, draw), `B` (borteseier, away win). `HU`, `UB` and `HB` are half covers and `HUB` a full cover. The copyable grid has the same layout as the page: one line per match with the kick-off and three boxes under H, U and B (■ = tick it), and a check line saying what "Ditt system" should show after ticking (the number of rekker and the cost). Kick-off days are written as the site writes them (Sø., Lø., ...).
 
 ## Edge cases
 

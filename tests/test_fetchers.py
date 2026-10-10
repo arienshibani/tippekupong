@@ -293,8 +293,10 @@ class WholeChainThroughFiles(unittest.TestCase):
             self.assertEqual(report.count("| **"), 13)  # 12 matches plus the chosen strategy in the comparison table
             self.assertIn("Hjelpelinjen", report)
             self.assertIn("# Tipping recommendation" if False else "# Tipping coupon recommendation: Tipping, Sunday 11 October (round #", report)
-            self.assertIn("Kick-off (Oslo)", report)
-            self.assertIn("Sun 14:30", report)           # Fredrikstad - Tromsø, 14:30 Oslo time
+            self.assertIn("| Kick-off |", report)
+            self.assertIn("Sø. 14:30", report)           # Fredrikstad - Tromsø, 14:30 Oslo time
+            self.assertNotIn("1/X/2", report)
+            self.assertIn("rekker**", report)             # the "Ditt system" check line
             self.assertNotIn("in line", report)
             self.assertNotIn("confidence medium", report)
             self.assertEqual(report.count("no bookmaker odds (expert tips"), 0)  # shortened in the table

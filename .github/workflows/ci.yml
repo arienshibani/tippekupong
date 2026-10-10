@@ -20,6 +20,8 @@ jobs:
           python-version: "3.12"
       - name: Validate skills
         run: python3 scripts/validate_skills.py
+      - name: Check shared references are synced into every skill
+        run: python3 scripts/sync_references.py --check
       - name: Run tests
         run: python3 -m unittest discover -s tests -v
       - name: Package skills

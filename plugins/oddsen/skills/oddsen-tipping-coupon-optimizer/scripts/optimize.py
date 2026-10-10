@@ -35,7 +35,7 @@ import math
 import sys
 
 OUTCOMES = ("H", "U", "B")
-MARK = {"H": "1", "U": "X", "B": "2"}
+MARK = {"H": "H", "U": "U", "B": "B"}  # the letters on the coupon page
 RISK_LAMBDA = {"safe": 0.0, "balanced": 0.5, "contrarian": 1.0}
 Q_FLOOR = 0.02
 RESCALE_TOL = 0.02

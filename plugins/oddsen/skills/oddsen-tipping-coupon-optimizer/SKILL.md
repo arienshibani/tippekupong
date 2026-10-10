@@ -49,7 +49,7 @@ Given an estimated probability and the public split for every match, this skill 
 
 ## Output
 
-`build.json`: for each tier a plan with `strategy`, `rows`, `cost_nok`, `marks` (per match: `mark` such as `1`, `X2`, `1X2`; `cover`; `p`; `q`; `value_ratio`), `p_any_prize`, `p_all_correct` and `one_in`, `p_11_or_more_correct`, `p_10_or_more_correct`, `expected_payout_nok`, `expected_payout_per_nok`, `expected_payout_se_nok`, `baselines` and `alternatives`. The report skill turns this into the text for the user.
+`build.json`: for each tier a plan with `strategy`, `rows`, `cost_nok`, `marks` (per match: `mark` such as `H`, `UB`, `HUB` (the letters on the coupon page); `cover`; `p`; `q`; `value_ratio`), `p_any_prize`, `p_all_correct` and `one_in`, `p_11_or_more_correct`, `p_10_or_more_correct`, `expected_payout_nok`, `expected_payout_per_nok`, `expected_payout_se_nok`, `baselines` and `alternatives`. The report skill turns this into the text for the user.
 
 How to talk about the numbers:
 - **Chance of a prize** is what the user feels: typically 10 to 15 % at 24 to 48 rows on a mixed coupon.

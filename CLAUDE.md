@@ -15,7 +15,7 @@ A Claude Code plugin marketplace with one plugin, `oddsen`, containing skills th
 - **Tests:** `python3 -m unittest discover -s tests` must pass. Fresh-Claude test runs (a subagent that only sees the unzipped skills) are saved in `docs/test-runs/`; do one after changing a SKILL.md or the pipeline contract.
 - **Frontmatter:** only `name` and `description` are required. The description says *when* to use the skill in one or two sentences (max 1024 chars) and includes trigger words a user would actually type ("value bet", "Oddsen", "odds", "spill").
 - **Keep SKILL.md lean** (< ~300 lines). Put long material in `references/` inside the skill folder and link to it. Put executable helpers in `scripts/` inside the skill folder.
-- **Shared references** live in `/shared`. Reference them from a skill as `references/<file>.md`; the packaging script copies them in. Don't duplicate their content inside a skill.
+- **Shared references** live in `/shared`. Reference them from a skill as `references/<file>.md`. A plugin install contains only `plugins/oddsen/`, so each skill carries committed copies in its own `references/` folder: after editing anything in `/shared`, run `python3 scripts/sync_references.py` (CI and `tests/test_references.py` fail if a copy is missing or stale). Never edit a copy; edit `/shared`. Don't write the same content into a SKILL.md.
 - **Language:** write skills in English; keep Norwegian Oddsen terms (H/U/B, Over/Under, etc.) as they appear on the site, with the English meaning alongside.
 
 ## Non-negotiables for every skill

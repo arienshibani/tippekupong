@@ -31,7 +31,7 @@
             "outcomes": [
               "H"
             ],
-            "mark": "1",
+            "mark": "H",
             "cover": "single",
             "p_covered": 0.51,
             "value_ratio": {
@@ -47,7 +47,7 @@
               "H",
               "U"
             ],
-            "mark": "1X",
+            "mark": "HU",
             "cover": "half",
             "p_covered": 0.7,
             "value_ratio": {
@@ -63,7 +63,7 @@
               "H",
               "U"
             ],
-            "mark": "1X",
+            "mark": "HU",
             "cover": "half",
             "p_covered": 0.6,
             "value_ratio": {
@@ -78,7 +78,7 @@
             "outcomes": [
               "H"
             ],
-            "mark": "1",
+            "mark": "H",
             "cover": "single",
             "p_covered": 0.62,
             "value_ratio": {
@@ -94,7 +94,7 @@
               "H",
               "B"
             ],
-            "mark": "12",
+            "mark": "HB",
             "cover": "half",
             "p_covered": 0.69,
             "value_ratio": {
@@ -109,7 +109,7 @@
             "outcomes": [
               "B"
             ],
-            "mark": "2",
+            "mark": "B",
             "cover": "single",
             "p_covered": 0.48,
             "value_ratio": {
@@ -136,7 +136,7 @@
             "outcomes": [
               "H"
             ],
-            "mark": "1",
+            "mark": "H",
             "cover": "single",
             "p_covered": 0.51,
             "value_ratio": {
@@ -152,7 +152,7 @@
               "H",
               "U"
             ],
-            "mark": "1X",
+            "mark": "HU",
             "cover": "half",
             "p_covered": 0.7,
             "value_ratio": {
@@ -169,7 +169,7 @@
               "U",
               "B"
             ],
-            "mark": "1X2",
+            "mark": "HUB",
             "cover": "full",
             "p_covered": 1.0,
             "value_ratio": {
@@ -184,7 +184,7 @@
             "outcomes": [
               "H"
             ],
-            "mark": "1",
+            "mark": "H",
             "cover": "single",
             "p_covered": 0.62,
             "value_ratio": {
@@ -200,7 +200,7 @@
               "H",
               "B"
             ],
-            "mark": "12",
+            "mark": "HB",
             "cover": "half",
             "p_covered": 0.69,
             "value_ratio": {
@@ -215,7 +215,7 @@
             "outcomes": [
               "B"
             ],
-            "mark": "2",
+            "mark": "B",
             "cover": "single",
             "p_covered": 0.48,
             "value_ratio": {
@@ -242,7 +242,7 @@
             "outcomes": [
               "H"
             ],
-            "mark": "1",
+            "mark": "H",
             "cover": "single",
             "p_covered": 0.51,
             "value_ratio": {
@@ -258,7 +258,7 @@
               "H",
               "U"
             ],
-            "mark": "1X",
+            "mark": "HU",
             "cover": "half",
             "p_covered": 0.7,
             "value_ratio": {
@@ -275,7 +275,7 @@
               "U",
               "B"
             ],
-            "mark": "1X2",
+            "mark": "HUB",
             "cover": "full",
             "p_covered": 1.0,
             "value_ratio": {
@@ -290,7 +290,7 @@
             "outcomes": [
               "H"
             ],
-            "mark": "1",
+            "mark": "H",
             "cover": "single",
             "p_covered": 0.62,
             "value_ratio": {
@@ -307,7 +307,7 @@
               "B",
               "U"
             ],
-            "mark": "1X2",
+            "mark": "HUB",
             "cover": "full",
             "p_covered": 1.0,
             "value_ratio": {
@@ -322,7 +322,7 @@
             "outcomes": [
               "B"
             ],
-            "mark": "2",
+            "mark": "B",
             "cover": "single",
             "p_covered": 0.48,
             "value_ratio": {
@@ -369,6 +369,7 @@
         "U": 1.35,
         "B": 1.222
       },
+      "kickoff": "2026-10-11T14:30:00+02:00",
       "applied": [],
       "rejected": [],
       "notes": [],
@@ -407,6 +408,7 @@
         "U": 1.111,
         "B": 1.071
       },
+      "kickoff": "2026-10-11T17:00:00+02:00",
       "applied": [],
       "rejected": [
         {
@@ -468,6 +470,7 @@
         "U": 1.4,
         "B": 0.667
       },
+      "kickoff": "2026-10-11T17:00:00+02:00",
       "applied": [
         {
           "outcome": "B",
@@ -487,7 +490,6 @@
       "rejected": [],
       "notes": [
         "news 'Away top scorer ruled out, announced 11:50' is only 10 min old; the market may not have fully moved yet",
-        "news 'Same news, mirrored' is only 10 min old; the market may not have fully moved yet",
         "news applied: B -2 pp, H +2 pp"
       ],
       "split_note": null,
@@ -525,6 +527,7 @@
         "U": 1.375,
         "B": 1.333
       },
+      "kickoff": "2026-10-11T15:00:00+02:00",
       "applied": [],
       "rejected": [
         {
@@ -580,6 +583,7 @@
         "U": 1.033,
         "B": 0.917
       },
+      "kickoff": "2026-10-11T17:30:00+02:00",
       "applied": [],
       "rejected": [],
       "notes": [],
@@ -618,6 +622,7 @@
         "U": 1.5,
         "B": 0.8
       },
+      "kickoff": "2026-10-11T19:15:00+02:00",
       "applied": [],
       "rejected": [],
       "notes": [],
