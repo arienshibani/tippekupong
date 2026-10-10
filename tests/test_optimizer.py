@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILL = ROOT / "plugins/oddsen/skills/oddsen-tipping-coupon-optimizer"
+SKILL = ROOT / "plugins/tippekupong/skills/tippekupong-optimizer"
 spec = importlib.util.spec_from_file_location("optimize", SKILL / "scripts/optimize.py")
 opt = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(opt)

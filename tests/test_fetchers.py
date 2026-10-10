@@ -11,7 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILLS = ROOT / "plugins/oddsen/skills"
+SKILLS = ROOT / "plugins/tippekupong/skills"
 SNAPSHOT = ROOT / "tests/fixtures/nt_live_info_2026-10-10.json"
 HISTORY = json.loads((ROOT / "tests/fixtures/nt_history_60_rounds.json").read_text())["games"]
 
@@ -23,9 +23,9 @@ def load(name, rel):
     return mod
 
 
-fc = load("fetch_coupon", "oddsen-tipping-fixtures/scripts/fetch_coupon.py")
-fo = load("fetch_odds", "oddsen-tipping-market-odds/scripts/fetch_odds.py")
-bl = load("blend", "oddsen-tipping-probability-engine/scripts/blend.py")
+fc = load("fetch_coupon", "tippekupong-fixtures/scripts/fetch_coupon.py")
+fo = load("fetch_odds", "tippekupong-odds/scripts/fetch_odds.py")
+bl = load("blend", "tippekupong-probabilities/scripts/blend.py")
 RAW = json.loads(SNAPSHOT.read_text())
 NOW = datetime(2026, 10, 10, 16, 0, tzinfo=timezone.utc)
 
@@ -113,11 +113,11 @@ class FetchCoupon(unittest.TestCase):
         self.assertIn("paste the coupon", err.getvalue())
 
     def test_the_script_never_asks_for_credentials(self):
-        text = (SKILLS / "oddsen-tipping-fixtures/scripts/fetch_coupon.py").read_text().lower()
+        text = (SKILLS / "tippekupong-fixtures/scripts/fetch_coupon.py").read_text().lower()
         for word in ("password", "bankid", "cookie", "authorization", "bearer", "token", "post("):
             self.assertNotIn(word, text, word)
         self.assertIn('headers={"User-Agent": USER_AGENT, "Accept": "application/json"}',
-                      (SKILLS / "oddsen-tipping-fixtures/scripts/fetch_coupon.py").read_text())  # the only headers it sends
+                      (SKILLS / "tippekupong-fixtures/scripts/fetch_coupon.py").read_text())  # the only headers it sends
 
 
 CSV = """Div,Date,Time,HomeTeam,AwayTeam,B365H,B365D,B365A,PPH,PPD,PPA,BFEH,BFED,BFEA
@@ -179,7 +179,7 @@ class FetchOdds(unittest.TestCase):
         self.assertTrue(any("31.2 h old" in n for n in r["notes"]))
 
     def test_output_feeds_the_engine(self):
-        engine = load("engine", "oddsen-tipping-probability-engine/scripts/engine.py")
+        engine = load("engine", "tippekupong-probabilities/scripts/engine.py")
         out = engine.run(dict(self.result(), now="2026-10-10T16:30:00Z"))
         self.assertEqual({m["slot"] for m in out["matches"] if m["status"] == "ok"}, {10, 11, 7})
         self.assertEqual(out["source"]["odds_age_hours"], self.result()["source"]["odds_age_hours"])
@@ -261,24 +261,24 @@ class WholeChainThroughFiles(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             d = Path(d)
             (d / "fixtures.csv").write_text(CSV)
-            self.run_script("oddsen-tipping-fixtures/scripts/fetch_coupon.py", "--file", str(SNAPSHOT), "--day", "sunday",
+            self.run_script("tippekupong-fixtures/scripts/fetch_coupon.py", "--file", str(SNAPSHOT), "--day", "sunday",
                             "--out", "coupon.json", cwd=d)
             # the saved CSV has fixtures for three of the coupon's matches
-            self.run_script("oddsen-tipping-market-odds/scripts/fetch_odds.py", "--coupon", "coupon.json",
+            self.run_script("tippekupong-odds/scripts/fetch_odds.py", "--coupon", "coupon.json",
                             "--fixtures-file", "fixtures.csv", "--out", "odds.json", cwd=d)
-            engine = self.run_script("oddsen-tipping-probability-engine/scripts/engine.py", "odds.json", cwd=d)
+            engine = self.run_script("tippekupong-probabilities/scripts/engine.py", "odds.json", cwd=d)
             (d / "engine.json").write_text(engine)
-            self.run_script("oddsen-tipping-probability-engine/scripts/blend.py", "--coupon", "coupon.json",
+            self.run_script("tippekupong-probabilities/scripts/blend.py", "--coupon", "coupon.json",
                             "--engine", "engine.json", "--out", "blend.json", cwd=d)
             (d / "news.json").write_text(json.dumps({"4": [
                 {"outcome": "H", "delta_pp": -3, "reason": "striker out", "source": "club", "source_time": "2026-10-10T17:00:00+02:00"},
                 {"outcome": "B", "delta_pp": 3, "reason": "mirror", "source": "club", "source_time": "2026-10-10T17:00:00+02:00"}]}))
-            value = self.run_script("oddsen-tipping-value-model/scripts/adjust.py", "blend.json", "--news", "news.json", cwd=d)
+            value = self.run_script("tippekupong-news/scripts/adjust.py", "blend.json", "--news", "news.json", cwd=d)
             (d / "value.json").write_text(value)
-            self.run_script("oddsen-tipping-coupon-optimizer/scripts/build.py", "--value", "value.json", "--coupon", "coupon.json",
+            self.run_script("tippekupong-optimizer/scripts/build.py", "--value", "value.json", "--coupon", "coupon.json",
                             "--budget", "100", "--bankroll", "2500", "--samples", "500", "--final-samples", "4000",
                             "--out", "build.json", cwd=d)
-            report = self.run_script("oddsen-tipping-coupon-output/scripts/render.py", "--build", "build.json", "--value", "value.json",
+            report = self.run_script("tippekupong-report/scripts/render.py", "--build", "build.json", "--value", "value.json",
                                      "--coupon", "coupon.json", "--odds", "odds.json", "--bankroll", "2500",
                                      "--now", "2026-10-10T16:30:00Z", "--note", "test run", cwd=d)
             built = json.loads((d / "build.json").read_text())

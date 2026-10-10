@@ -4,7 +4,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SKILLS_DIR="$ROOT/plugins/oddsen/skills"
+SKILLS_DIR="$ROOT/plugins/tippekupong/skills"
 DIST="$ROOT/dist"
 BUILD="$(mktemp -d)"
 trap 'rm -rf "$BUILD"' EXIT

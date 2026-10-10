@@ -9,7 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 spec = importlib.util.spec_from_file_location(
-    "build", ROOT / "plugins/oddsen/skills/oddsen-tipping-coupon-optimizer/scripts/build.py")
+    "build", ROOT / "plugins/tippekupong/skills/tippekupong-optimizer/scripts/build.py")
 b = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(b)
 

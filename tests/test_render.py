@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILLS = ROOT / "plugins/oddsen/skills"
+SKILLS = ROOT / "plugins/tippekupong/skills"
 
 
 def load(name, rel):
@@ -18,12 +18,12 @@ def load(name, rel):
     return mod
 
 
-rnd = load("render", "oddsen-tipping-coupon-output/scripts/render.py")
-opt = load("optimize", "oddsen-tipping-coupon-optimizer/scripts/optimize.py")
-adj = load("adjust", "oddsen-tipping-value-model/scripts/adjust.py")
-eng = load("engine", "oddsen-tipping-probability-engine/scripts/engine.py")
+rnd = load("render", "tippekupong-report/scripts/render.py")
+opt = load("optimize", "tippekupong-optimizer/scripts/optimize.py")
+adj = load("adjust", "tippekupong-news/scripts/adjust.py")
+eng = load("engine", "tippekupong-probabilities/scripts/engine.py")
 
-EXAMPLE = json.loads((SKILLS / "oddsen-tipping-coupon-output/examples/full-coupon.json").read_text())
+EXAMPLE = json.loads((SKILLS / "tippekupong-report/examples/full-coupon.json").read_text())
 # The example has a 1 000 NOK bankroll and tiers of 8 / 12 / 18 NOK (0.8 / 1.2 / 1.8 %), all within the
 # default 2 % cap. A 500 NOK bankroll puts only the cheapest tier (1.6 %) within the cap.
 

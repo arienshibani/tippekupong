@@ -5,12 +5,12 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILLS = ROOT / "plugins/oddsen/skills"
+SKILLS = ROOT / "plugins/tippekupong/skills"
 SHARED = ROOT / "shared"
 
 
 class ReferencesTravelWithTheSkills(unittest.TestCase):
-    """A plugin install contains only plugins/oddsen/, so each skill must carry its own references/."""
+    """A plugin install contains only plugins/tippekupong/, so each skill must carry its own references/."""
 
     def skills(self):
         return sorted(p for p in SKILLS.iterdir() if (p / "SKILL.md").is_file())

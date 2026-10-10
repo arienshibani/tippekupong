@@ -51,13 +51,13 @@ Design and results: [`COUPON-ARCHITECTURE.md`](COUPON-ARCHITECTURE.md). Rules: `
 
 | Skill | What it does | Status |
 |---|---|---|
-| `oddsen-tipping-coupon` | Orchestrator: fetch, estimate, build, report. | Built; fresh-Claude tested on live data (3 rounds) |
-| `oddsen-tipping-fixtures` | Open rounds from Norsk Tipping's public site data, with a paste fallback. | Built |
-| `oddsen-tipping-market-odds` | Free multi-bookmaker odds (football-data.co.uk) for the leagues it covers. | Built |
-| `oddsen-tipping-probability-engine` | De-vig, consensus, and the blend with expert tips and public split. | Built |
-| `oddsen-tipping-value-model` | Bounded, sourced news adjustments with a priced-in check. | Built |
-| `oddsen-tipping-coupon-optimizer` | Builds the coupon for expected payout over the 12/11/10 tiers. | Built |
-| `oddsen-tipping-coupon-output` | The report. | Built |
+| `tippekupong` | Orchestrator: fetch, estimate, build, report. | Built; fresh-Claude tested on live data (3 rounds) |
+| `tippekupong-fixtures` | Open rounds from Norsk Tipping's public site data, with a paste fallback. | Built |
+| `tippekupong-odds` | Free multi-bookmaker odds (football-data.co.uk) for the leagues it covers. | Built |
+| `tippekupong-probabilities` | De-vig, consensus, and the blend with expert tips and public split. | Built |
+| `tippekupong-news` | Bounded, sourced news adjustments with a priced-in check. | Built |
+| `tippekupong-optimizer` | Builds the coupon for expected payout over the 12/11/10 tiers. | Built |
+| `tippekupong-report` | The report. | Built |
 
 Ideas not built: a rating model (Elo/Poisson) from `football-data.co.uk/new/NOR.csv` for Eliteserien matches, which have no free odds; team-news fetching from public pages; a Norwegian version of the report; the half-time game; multi-week play.
 

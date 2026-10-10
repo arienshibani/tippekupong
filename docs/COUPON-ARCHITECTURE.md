@@ -24,13 +24,13 @@ fetch_coupon.py ──> coupon.json ──────────────�
 
 | Stage | Skill | What it does |
 |---|---|---|
-| 1 | `oddsen-tipping-fixtures` | One GET of the data feed Norsk Tipping's own Tipping page uses: the open rounds (Saturday, Sunday, midweek) with 12 matches each, kick-offs, deadline, pool so far, **row price (1.00 NOK)**, the **public split** and Norsk Tipping's **expert split** per match. A second GET for last week's comparable round gives an estimate of the final turnover. |
-| 2 | `oddsen-tipping-market-odds` | One download of football-data.co.uk's `fixtures.csv`: 1X2 odds from up to seven bookmakers for the major leagues. Names are matched with accents and an alias table; anything unmatched is reported, never guessed. |
-| 3 | `oddsen-tipping-probability-engine` | De-vigs each book (multiplicative by default), builds a consensus weighted by 1/margin, then `blend.py` mixes it with the expert and public splits. |
-| 4 | `oddsen-tipping-value-model` | Applies small, sourced, capped team-news adjustments, and decides from the times whether the market already priced the news in. |
-| 5 | `oddsen-tipping-coupon-optimizer` | Builds the coupon (see the payout model below). |
-| 6 | `oddsen-tipping-coupon-output` | The report. |
-| - | `oddsen-tipping-coupon` | The orchestrator: asks for the round, budget and bankroll, runs the commands, explains the result in the user's language. |
+| 1 | `tippekupong-fixtures` | One GET of the data feed Norsk Tipping's own Tipping page uses: the open rounds (Saturday, Sunday, midweek) with 12 matches each, kick-offs, deadline, pool so far, **row price (1.00 NOK)**, the **public split** and Norsk Tipping's **expert split** per match. A second GET for last week's comparable round gives an estimate of the final turnover. |
+| 2 | `tippekupong-odds` | One download of football-data.co.uk's `fixtures.csv`: 1X2 odds from up to seven bookmakers for the major leagues. Names are matched with accents and an alias table; anything unmatched is reported, never guessed. |
+| 3 | `tippekupong-probabilities` | De-vigs each book (multiplicative by default), builds a consensus weighted by 1/margin, then `blend.py` mixes it with the expert and public splits. |
+| 4 | `tippekupong-news` | Applies small, sourced, capped team-news adjustments, and decides from the times whether the market already priced the news in. |
+| 5 | `tippekupong-optimizer` | Builds the coupon (see the payout model below). |
+| 6 | `tippekupong-report` | The report. |
+| - | `tippekupong` | The orchestrator: asks for the round, budget and bankroll, runs the commands, explains the result in the user's language. |
 
 If a stage fails there is a fallback: a pasted coupon (written by hand into the same `coupon.json` shape), pasted odds, or no odds at all (then every match is priced from the expert and public splits).
 

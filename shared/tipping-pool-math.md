@@ -2,7 +2,7 @@
 
 Math for Norsk Tipping's pool games (Tipping: 1X2 rows on a fixed list of matches). Read `odds-math.md` first for implied probability, margin and de-vig.
 
-**The payout rules (12/11/10 correct, shares of the turnover, rounding, the 10 kr minimum, the row price of 1 NOK) are documented in `tipping-payout-rules.md` with their evidence.** This file keeps the simpler maths about the chance of a *fully correct* row, which still describes the 12-correct tier; the optimizer in `oddsen-tipping-coupon-optimizer` (`build.py`) uses the full three-tier payout model instead.
+**The payout rules (12/11/10 correct, shares of the turnover, rounding, the 10 kr minimum, the row price of 1 NOK) are documented in `tipping-payout-rules.md` with their evidence.** This file keeps the simpler maths about the chance of a *fully correct* row, which still describes the 12-correct tier; the optimizer in `tippekupong-optimizer` (`build.py`) uses the full three-tier payout model instead.
 
 ## Fixed odds vs. pool
 

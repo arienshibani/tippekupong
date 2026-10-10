@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILL = ROOT / "plugins/oddsen/skills/oddsen-tipping-value-model"
+SKILL = ROOT / "plugins/tippekupong/skills/tippekupong-news"
 spec = importlib.util.spec_from_file_location("adjust", SKILL / "scripts/adjust.py")
 adj = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(adj)
@@ -272,7 +272,7 @@ class ExampleAndHandoff(unittest.TestCase):
     def test_handoff_to_optimizer_includes_q(self):
         result = adj.run(EXAMPLE)
         spec2 = importlib.util.spec_from_file_location(
-            "optimize", ROOT / "plugins/oddsen/skills/oddsen-tipping-coupon-optimizer/scripts/optimize.py")
+            "optimize", ROOT / "plugins/tippekupong/skills/tippekupong-optimizer/scripts/optimize.py")
         opt = importlib.util.module_from_spec(spec2)
         spec2.loader.exec_module(opt)
         plan = opt.optimize({"row_price_nok": 1, "budget_nok": 4, "risk": "contrarian",

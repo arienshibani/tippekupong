@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Copy shared/*.md into every skill's references/ folder.
 
-A Claude Code plugin install only contains plugins/oddsen/, so the skills cannot see /shared.
+A Claude Code plugin install only contains plugins/tippekupong/, so the skills cannot see /shared.
 Their SKILL.md files say "read references/<file>.md", so each skill carries a copy. The copies
 are committed; this script keeps them identical to /shared.
 
@@ -14,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 SHARED = ROOT / "shared"
-SKILLS = ROOT / "plugins/oddsen/skills"
+SKILLS = ROOT / "plugins/tippekupong/skills"
 
 
 def main(argv):

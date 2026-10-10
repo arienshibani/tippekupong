@@ -1,0 +1,18 @@
+{
+  "name": "tippekupong",
+  "version": "0.7.0",
+  "description": "Build a Norsk Tipping Tipping coupon from live data: fetches the round, estimates the matches, picks marks and covers for the best expected payout, and explains the result.",
+  "author": {
+    "name": "Ari Enshibani"
+  },
+  "repository": "https://github.com/arienshibani/tippekupong",
+  "license": "MIT",
+  "keywords": [
+    "norsk-tipping",
+    "tipping",
+    "kupong",
+    "gardering",
+    "betting",
+    "odds"
+  ]
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate every skill under plugins/oddsen/skills.
+"""Validate every skill under plugins/tippekupong/skills.
 
 Checks: SKILL.md exists, has YAML frontmatter with `name` and `description`,
 name matches folder and is kebab-case, description <= 1024 chars,
@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILLS = ROOT / "plugins" / "oddsen" / "skills"
+SKILLS = ROOT / "plugins" / "tippekupong" / "skills"
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 
 
@@ -31,7 +31,7 @@ def main() -> int:
     errors = []
 
     for manifest in [ROOT / ".claude-plugin" / "marketplace.json",
-                     ROOT / "plugins" / "oddsen" / ".claude-plugin" / "plugin.json"]:
+                     ROOT / "plugins" / "tippekupong" / ".claude-plugin" / "plugin.json"]:
         try:
             json.loads(manifest.read_text())
         except Exception as e:  # noqa: BLE001

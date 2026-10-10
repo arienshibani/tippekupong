@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKILL = ROOT / "plugins/oddsen/skills/oddsen-tipping-probability-engine"
+SKILL = ROOT / "plugins/tippekupong/skills/tippekupong-probabilities"
 spec = importlib.util.spec_from_file_location("engine", SKILL / "scripts/engine.py")
 eng = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(eng)
@@ -169,7 +169,7 @@ class ExampleAndHandoff(unittest.TestCase):
         self.assertEqual([e["slot"] for e in result["excluded"]], [3])
 
         spec2 = importlib.util.spec_from_file_location(
-            "optimize", ROOT / "plugins/oddsen/skills/oddsen-tipping-coupon-optimizer/scripts/optimize.py")
+            "optimize", ROOT / "plugins/tippekupong/skills/tippekupong-optimizer/scripts/optimize.py")
         opt = importlib.util.module_from_spec(spec2)
         spec2.loader.exec_module(opt)
         plan = opt.optimize({"row_price_nok": 1, "budget_nok": 4,
