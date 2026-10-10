@@ -27,6 +27,22 @@ def frontmatter(text: str) -> dict:
     return out
 
 
+def plain_scalar_problem(text: str):
+    """Claude Code reads frontmatter leniently, but strict YAML parsers (the skills.sh CLI, Claude.ai uploads,
+    directory scanners) reject an unquoted value containing ': ' or ' #'. Such a skill is silently skipped."""
+    m = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+    for line in (m.group(1).splitlines() if m else []):
+        if line.startswith(" ") or ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        value = value.strip()
+        if value[:1] in ("'", '"', ">", "|"):
+            continue
+        if ": " in value or " #" in value or value.endswith(":"):
+            return f"`{key.strip()}` has an unquoted ': ' or ' #' that strict YAML parsers reject; reword it or quote the whole value"
+    return None
+
+
 def main() -> int:
     errors = []
 
@@ -56,6 +72,8 @@ def main() -> int:
             errors.append(f"{rel}: frontmatter missing `description`")
         elif len(desc) > 1024:
             errors.append(f"{rel}: description is {len(desc)} chars (max 1024)")
+        elif plain_scalar_problem(md.read_text()):
+            errors.append(f"{rel}: {plain_scalar_problem(md.read_text())}")
 
     for e in errors:
         print(f"ERROR {e}")

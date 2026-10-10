@@ -1,6 +1,6 @@
 ---
 name: tippekupong
-description: Builds a complete Tipping kupong for the user: reads this week's matches, odds and public split from Norsk Tipping and open data, picks the marks and half/full covers (gardering) within their budget, and explains the result. Use when the user says "bygg kupongen", "lag en tippekupong", "gardering", "tipping", "hva bør jeg tippe", or asks what to play on this week's coupon.
+description: Builds a complete Tipping kupong for the user by reading this week's matches, odds and public split from Norsk Tipping and open data, picking the marks and half/full covers (gardering) within their budget, and explaining the result. Use when the user says "bygg kupongen", "lag en tippekupong", "gardering", "tipping", "hva bør jeg tippe", or asks what to play on this week's coupon.
 ---
 
 # Tipping coupon (orchestrator)

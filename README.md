@@ -10,14 +10,18 @@ The skills are small, composable, and each one works alone. They show their sour
 
 ## Install
 
-**1. Get the plugin** (Claude Code):
+**1. Get the plugin.** In Claude Code:
 
 ```bash
 claude plugin marketplace add arienshibani/tippekupong
 claude plugin install tippekupong@tippekupong
 ```
 
-The repo is private, so you need GitHub access. From a local clone, use the folder path instead of `arienshibani/tippekupong`.
+Or with the [skills CLI](https://skills.sh), which installs the skills for Claude Code and other agents:
+
+```bash
+npx skills add arienshibani/tippekupong
+```
 
 **2. Start a new Claude Code session.** Sessions that were already open do not pick up new plugins.
 

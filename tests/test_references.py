@@ -36,5 +36,23 @@ class ReferencesTravelWithTheSkills(unittest.TestCase):
             self.assertTrue((skill / "references/responsible-gambling.md").exists(), skill.name)
 
 
+class FrontmatterIsStrictYamlSafe(unittest.TestCase):
+    """The skills.sh CLI silently skipped three skills whose description had a colon and a space."""
+
+    def test_every_skill_frontmatter_is_safe_for_strict_parsers(self):
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import validate_skills as v
+        for skill in sorted(p for p in SKILLS.iterdir() if (p / "SKILL.md").is_file()):
+            self.assertIsNone(v.plain_scalar_problem((skill / "SKILL.md").read_text()), skill.name)
+
+    def test_the_check_catches_the_bad_pattern(self):
+        sys.path.insert(0, str(ROOT / "scripts"))
+        import validate_skills as v
+        bad = "---\nname: x\ndescription: Does things: the first thing\n---\n"
+        self.assertIn("strict YAML", v.plain_scalar_problem(bad))
+        self.assertIsNone(v.plain_scalar_problem('---\nname: x\ndescription: "Does things: quoted"\n---\n'))
+        self.assertIsNone(v.plain_scalar_problem("---\nname: x\ndescription: Does things, then more (\"quoted\") things\n---\n"))
+
+
 if __name__ == "__main__":
     unittest.main()

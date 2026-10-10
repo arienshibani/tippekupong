@@ -1,6 +1,6 @@
 ---
 name: tippekupong-fixtures
-description: Reads this week's open Tipping coupons straight from Norsk Tipping's public site, with no login and no key: the 12 matches, kick-offs, deadline, pool size, row price, the public split ("folkets fordeling") and Norsk Tipping's expert tips. Use when the user asks what is on the kupong, wants this week's Tipping matches, or you need the coupon data to build one.
+description: Reads this week's open Tipping coupons straight from Norsk Tipping's public site, with no login and no key, giving the 12 matches, kick-offs, deadline, pool size, row price, the public split ("folkets fordeling") and Norsk Tipping's expert tips. Use when the user asks what is on the kupong, wants this week's Tipping matches, or you need the coupon data to build one.
 ---
 
 # Tipping fixtures

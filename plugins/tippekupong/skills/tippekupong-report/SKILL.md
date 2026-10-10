@@ -1,6 +1,6 @@
 ---
 name: tippekupong-report
-description: Writes the final Tipping kupong recommendation as a readable report: the marks and covers per match, reasons, risks, the chance of a prize and expected payout compared with following the public, cost in NOK and as a share of the bankroll, and a copyable row grid. Use when the user wants the finished coupon, a summary to fill in, or an explanation of the picks.
+description: Writes the final Tipping kupong recommendation as a readable report with the marks and covers per match, reasons, risks, the chance of a prize and expected payout compared with following the public, cost in NOK and as a share of the bankroll, and a copyable row grid. Use when the user wants the finished coupon, a summary to fill in, or an explanation of the picks.
 ---
 
 # Tipping coupon output
