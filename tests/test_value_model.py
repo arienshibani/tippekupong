@@ -106,6 +106,16 @@ class Guards(unittest.TestCase):
                                   "user_approved": True, "adjustments": [adjustment("H", -9)]}]})["matches"][0]
         self.assertGreaterEqual(r["p_est"]["H"], 0.009)
 
+    def test_tiny_delta_is_flagged_as_a_probable_unit_mistake(self):
+        r = one([adjustment("H", -0.03)])
+        self.assertTrue(any("check the unit" in f for f in r["risk_flags"]))
+        self.assertEqual(one([adjustment("H", -3)])["risk_flags"], [])
+
+    def test_percentages_instead_of_fractions_get_a_hint(self):
+        with self.assertRaises(adj.InputError) as ctx:
+            adj.run({"matches": [{"slot": 1, "p_fair": {"H": 51, "U": 27, "B": 22}}]})
+        self.assertIn("fractions", str(ctx.exception))
+
     def test_many_adjustments_lower_confidence(self):
         r = one([adjustment("H", -1), adjustment("U", 1), adjustment("B", 0.5)])
         self.assertIn("3 adjustments applied", r["confidence_reasons"])

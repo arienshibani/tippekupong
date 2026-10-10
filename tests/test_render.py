@@ -86,6 +86,52 @@ class Rendering(unittest.TestCase):
         self.assertTrue(any("every possible row" in w for w in out["warnings"]))
 
 
+class DryRunFindings(unittest.TestCase):
+    def test_probability_is_scoped_when_matches_were_not_analysed(self):
+        md = rnd.build(example())["markdown"]
+        self.assertIn("(analysed matches only)", md)
+        self.assertIn("covers only the 6 analysed matches", md)
+        self.assertIn("P(fully correct row) (analysed matches only)", md)
+
+    def test_no_scope_note_when_every_match_was_analysed(self):
+        data = example(excluded=[])
+        md = rnd.build(data)["markdown"]
+        self.assertNotIn("analysed matches only", md)
+
+    def test_grid_has_a_placeholder_for_unanalysed_matches_in_slot_order(self):
+        md = rnd.build(example())["markdown"]
+        grid = md.split("```")[1].strip().splitlines()
+        self.assertEqual([int(line.split()[0]) for line in grid], [1, 2, 3, 4, 5, 6, 7])
+        self.assertIn("not analysed: mark it yourself", grid[-1])
+
+    def test_auto_reason_lists_outcomes_in_1_x_2_order(self):
+        plan_mark = {"outcomes": ["B", "H", "U"]}
+        m = {"p_est": {"H": .4, "U": .3, "B": .3}, "q": {"H": .4, "U": .3, "B": .3},
+             "value_ratio": {"H": 1.0, "U": 1.0, "B": 1.0}}
+        text = rnd._auto_why(plan_mark, m)
+        self.assertLess(text.index("1 40%"), text.index("X 30%"))
+        self.assertLess(text.index("X 30%"), text.index("2 30%"))
+
+    def test_value_index_is_explained(self):
+        md = rnd.build(example())["markdown"]
+        self.assertIn("1.0 means a row picked the way the public picks", md)
+
+    def test_malformed_input_gives_a_readable_error(self):
+        import contextlib
+        import io
+        import tempfile
+        bad = example()
+        bad["optimizer_result"] = bad["optimizer_result"]["plans"]  # list instead of object
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump(bad, f)
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            code = rnd.main(["render.py", f.name])
+        self.assertEqual(code, 1)
+        self.assertIn("wrong shape", err.getvalue())
+        Path(f.name).unlink()
+
+
 class Guardrails(unittest.TestCase):
     def test_overconfident_wording_is_rejected(self):
         for text in ("This is a safe pick", "A sure thing", "It's a lock", "Certain to win", "Guaranteed",

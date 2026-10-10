@@ -170,3 +170,4 @@ Every object that holds fetched data carries a `Source`. Team names are normalis
 3. Which public odds sources are stable enough to depend on without keys.
 4. Whether a per-match crowd-bias model can be calibrated from past published splits.
 5. Where session state (bankroll, budget) lives for Claude.ai vs Claude Code.
+6. **Optimizer objective.** The optimizer maximises the chance of a fully correct row; the risk setting only changes which outcomes fill a cover. It does not allocate covers by expected payout. Under the independence assumption, expected coupon payout is proportional to `Π_i Σ_k (p/q)` over marked outcomes, which the same dynamic programme could maximise per NOK. A dry run on a 12-match example gave a mean row value index of about 0.46 for the balanced plan, so the current plan trades payout per row for hit chance. Decide whether to add an expected-payout objective as a separate mode.

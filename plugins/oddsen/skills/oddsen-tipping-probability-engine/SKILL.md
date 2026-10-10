@@ -27,7 +27,7 @@ Every quote needs a source and a timestamp. If the user pasted odds with no time
 
 ## Steps
 
-1. Collect quotes and write the JSON the script expects (see `examples/two-matches.json`). Odds are decimal and must be above 1.00. Do not convert fractional or American odds silently: convert them and say so.
+1. Collect quotes and write the JSON the script expects (see `examples/two-matches.json`). Odds are decimal and must be above 1.00; Norwegian decimal commas ("2,10") are accepted. Do not convert fractional or American odds silently: convert them and say so.
 2. Run the script:
 
    ```bash

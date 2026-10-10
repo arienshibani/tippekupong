@@ -31,6 +31,8 @@ For a **row** `r` that picks outcome `k_i` in each match:
 
 Expected payout of a fully correct row is roughly proportional to `pool_after_takeout / (N_players × Q(r))`, where `N_players` is the number of rows played. So at equal `P(r)`, the lower-`Q` row pays more when it hits. `N_players` and pool size are often unknown; when they are, say so and report only the relative `row_value_index`, not an absolute EV.
 
+**Reading the row value index.** Draw a row the way the public does (each match independently from `q`): its expected index is exactly 1, because `Σ q × (p/q) = Σ p = 1`. So an index of 1.0 means "as lucrative per row as a typical public row", 0.5 means about half the expected payout per row, 2.0 about double. For a coupon, the **mean row value index** is `Π_i (average of p/q over the outcomes marked in match i)`, which is the expected payout per row relative to a public-style row. Total expected payout of a coupon is proportional to `Π_i Σ_k (p/q)` over marked outcomes, and cost to the row count, so adding covers raises the hit chance but usually lowers the mean index. This holds only under the independence assumption and ignores lower payout tiers.
+
 ## Gardering (covers)
 
 A cover marks more than one outcome in a match.

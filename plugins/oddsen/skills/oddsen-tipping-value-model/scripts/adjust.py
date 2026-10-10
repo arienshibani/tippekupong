@@ -57,7 +57,8 @@ def _probs(raw, where, floor=0.0):
         raise InputError(f"{where}: negative probability")
     total = sum(vals.values())
     if abs(total - 1.0) > SUM_TOL:
-        raise InputError(f"{where}: H+U+B sums to {total:.3f}, expected 1")
+        hint = " (use fractions such as 0.51, not percentages)" if total > 50 else ""
+        raise InputError(f"{where}: H+U+B sums to {total:.3f}, expected 1{hint}")
     if floor:
         vals = {k: max(v, floor) for k, v in vals.items()}
         total = sum(vals.values())
@@ -109,6 +110,9 @@ def process_match(m):
             rejected.append(dict(entry, why="unconfirmed; recorded as a risk flag, not a number"))
         else:
             applied.append(dict(entry, delta_pp=delta))
+            if 0 < abs(delta) < 0.5:
+                flags.append(f"{adj['outcome']} {delta:+g} pp is tiny: delta_pp is in percentage points "
+                             "(3 means 3 pp, not 0.03); check the unit")
 
     net = {k: sum(a["delta_pp"] for a in applied if a["outcome"] == k) for k in OUTCOMES}
     capped = False

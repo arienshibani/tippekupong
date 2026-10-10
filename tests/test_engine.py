@@ -94,9 +94,15 @@ class Consensus(unittest.TestCase):
         self.assertEqual(m["n_books"], 1)
         reasons = {d["book"]: d["reason"] for d in m["dropped"]}
         self.assertIn("stale", reasons["old"])
-        self.assertIn("incomplete", reasons["partial"])
-        self.assertIn("invalid", reasons["badodds"])
+        self.assertIn("need decimal odds", reasons["partial"])
+        self.assertIn("need decimal odds", reasons["badodds"])
         self.assertIn("unreadable", reasons["badtime"])
+
+    def test_norwegian_decimal_commas_are_accepted(self):
+        m = run([{"book": "pasted", "odds": {"H": "2,40", "U": " 3,30", "B": "3.00"},
+                  "fetched_at": "2026-10-10T11:00:00Z"}])
+        p, _, _ = eng.devig({"H": 2.40, "U": 3.30, "B": 3.00}, "multiplicative")
+        self.assertAlmostEqual(m["p_fair"]["H"], p["H"], places=5)
 
     def test_no_usable_quote_means_no_market_and_no_made_up_numbers(self):
         m = run([])

@@ -49,7 +49,8 @@ def _probs(raw, where, floor=0.0):
         raise InputError(f"{where}: negative probability")
     total = sum(vals.values())
     if abs(total - 1.0) > SUM_TOL:
-        raise InputError(f"{where}: H+U+B sums to {total:.3f}, expected 1")
+        hint = " (use fractions such as 0.51, not percentages)" if total > 50 else ""
+        raise InputError(f"{where}: H+U+B sums to {total:.3f}, expected 1{hint}")
     if floor:
         vals = {k: max(v, floor) for k, v in vals.items()}
         total = sum(vals.values())

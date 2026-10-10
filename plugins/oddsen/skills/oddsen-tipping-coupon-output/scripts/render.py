@@ -74,7 +74,7 @@ def _check_text(label, text):
 
 def _auto_why(plan_mark, match):
     parts = []
-    for k in plan_mark["outcomes"]:
+    for k in sorted(plan_mark["outcomes"], key=OUTCOMES.index):
         bit = f"{MARK[k]} {_pct(match['p_est'][k])}" if match else MARK[k]
         if match and match.get("q"):
             ratio = match["value_ratio"][k]
@@ -159,15 +159,22 @@ def build(data):
     if warnings:
         lines += ["\n>\n".join(f"> **Warning:** {w}" for w in warnings), ""]
 
+    excluded = data.get("excluded") or []
+    scope = " (analysed matches only)" if excluded else ""
     lines += [f"## Recommended: {rec['tier']} tier", "",
               f"- **{rec['rows']} rows, {rec['cost_nok']:g} NOK = {rec['pct_bankroll']:.2f} % of bankroll** "
               f"(cap {cap_pct:g} %)",
-              f"- Estimated chance that the coupon contains a fully correct row: "
+              f"- Estimated chance that the coupon contains a fully correct row{scope}: "
               f"**{rec['p_all_correct']:.2%}** (about 1 in {_one_in(rec['one_in'])})"]
+    if excluded:
+        lines.append(f"- This figure covers only the {len(rec['marks'])} analysed matches. Every unanalysed match "
+                     "lowers it further, by the chance that your mark there is right (for a single mark often "
+                     "somewhere between about 30 % and 55 %), so the real chance is lower.")
     if rec.get("mean_row_value_index") is not None:
         lines.append(f"- Crowding: mean row value index {rec['mean_row_value_index']}, "
-                     f"{rec['win_value_index']} for the rows most likely to hit "
-                     "(above 1 means less crowded than their probability suggests)")
+                     f"{rec['win_value_index']} for the rows most likely to hit. 1.0 means a row picked the way "
+                     "the public picks; below 1 means a lower expected payout per row than that, above 1 a "
+                     "higher one (assuming tippers choose matches independently)")
     lines += ["", "| # | Match | Mark | Cover | p (est) 1/X/2 | Public 1/X/2 | Why | Risk |",
               "|---|---|---|---|---|---|---|---|"]
     for pm in rec["marks"]:
@@ -178,9 +185,11 @@ def build(data):
             why.get(str(pm["slot"])) or _auto_why(pm, m), _risk_text(m)]) + " |")
 
     lines += ["", "Copy into your own coupon:", "", "```"]
-    lines += [f"{pm['slot']:>2}  {pm['mark']:<4} {pm['label']}" for pm in rec["marks"]]
+    grid = [(pm["slot"], f"{pm['slot']:>2}  {pm['mark']:<4} {pm['label']}") for pm in rec["marks"]]
+    grid += [(e["slot"], f"{e['slot']:>2}  ?    {e.get('label') or ''} (not analysed: mark it yourself)")
+             for e in excluded]
+    lines += [line for _, line in sorted(grid, key=lambda g: g[0])]
     lines += ["```"]
-    excluded = data.get("excluded") or []
     if excluded:
         names = ", ".join(f"#{e['slot']} {e.get('label') or ''}".strip() for e in excluded)
         lines += ["", f"**Not covered by this plan (no usable market): {names}.** The coupon still "
@@ -191,7 +200,7 @@ def build(data):
         lines += ["", "Fill the coupon in yourself; nothing is placed for you."]
 
     if len(plans) > 1:
-        lines += ["", "## Budget tiers", "", "| Tier | Rows | Cost (NOK) | % of bankroll | P(fully correct row) | 1 in | Within cap |",
+        lines += ["", "## Budget tiers", "", f"| Tier | Rows | Cost (NOK) | % of bankroll | P(fully correct row){scope} | 1 in | Within cap |",
                   "|---|---|---|---|---|---|---|"]
         for p in plans:
             lines.append(f"| {p['tier']} | {p['rows']} | {p['cost_nok']:g} | {p['pct_bankroll']:.2f} % | "
@@ -234,8 +243,13 @@ def main(argv):
     try:
         raw = sys.stdin.read() if args[0] == "-" else open(args[0], encoding="utf-8").read()
         out = build(json.loads(raw))
-    except (InputError, OSError, json.JSONDecodeError, KeyError) as e:
+    except (InputError, OSError, json.JSONDecodeError) as e:
         print(f"error: {e}", file=sys.stderr)
+        return 1
+    except (KeyError, TypeError, AttributeError) as e:
+        print(f"error: input has a missing field or the wrong shape ({type(e).__name__}: {e}). "
+              "Expected optimizer_result as the optimizer's full output (an object with 'plans') and "
+              "matches as the value model's 'matches' list.", file=sys.stderr)
         return 1
     print(json.dumps(out, indent=2) if "--json" in argv else out["markdown"])
     return 0

@@ -18,6 +18,7 @@ Install all `oddsen-tipping-*` skills together. This skill calls them by name:
 
 - Read `references/responsible-gambling.md` and follow it. The pool is a negative-expectation game on average; say so once, early, without lecturing.
 - Read `references/tipping-pool-math.md` and `references/odds-math.md` only if you need to explain a number.
+- Each stage has a script in its own skill folder (`scripts/engine.py`, `scripts/adjust.py`, `scripts/optimize.py`, `scripts/render.py`). Run it by that skill's folder path (for example `python3 <path to oddsen-tipping-probability-engine>/scripts/engine.py input.json`), not from this skill's folder. Write the stage inputs to files in a scratch folder and pass the file path. All numbers are fractions (0.51, not 51), odds are decimal, and Norwegian decimal commas ("2,10") are accepted for odds.
 - Nothing in this pipeline logs in, uses an account, or places a bet. The user fills in the coupon themselves.
 
 ## Inputs to ask for (once)
@@ -42,13 +43,26 @@ Never ask the user to log in, share a password, or hand over account access.
 7. **Report.** Run `oddsen-tipping-coupon-output` with the bankroll and cap, the optimizer result, the value-model `matches` and `excluded`, the sources, and your one-line reasons. Show the report.
 8. **Close.** Remind the user that lineups can change before the deadline and offer to re-run. Offer to explain any number. Do not suggest raising the budget.
 
+## Handoffs between stages
+
+Write each stage's input by taking the previous output and adding the fields in the last column. Extra fields are ignored, so you can copy whole objects.
+
+| From | To | Copy | Add |
+|---|---|---|---|
+| Engine `matches` | Value model `matches` | `slot`, `label`, `p_fair`, `confidence` | `q` (fractions summing to 1), `q_estimated`, `adjustments` |
+| Value model `optimizer_matches` | Optimizer `matches` | all of it (`slot`, `label`, `p`, `q`, `q_estimated`) | at top level: `row_price_nok`, `budget_nok`, optional `max_budget_nok`, `risk` |
+| Optimizer output | Output `optimizer_result` | the whole object | at top level: `bankroll_nok`, `coupon`, `sources`, `why`, `notes` |
+| Value model `matches` and `excluded` | Output `matches` and `excluded` | both lists, unchanged | none |
+
+Matches with no usable market appear in `excluded` and are left out of the optimizer. The report then says its chance figure covers only the analysed matches. Tell the user this in your own words too: every unanalysed match they mark lowers the real chance further.
+
 ## Degraded paths (say each one out loud)
 
 | Situation | What to do |
 |---|---|
 | Coupon pasted by hand | Fine. Note "pasted" as the source with the time. |
 | One bookmaker only | Continue; the report shows low confidence. |
-| No odds for a match | Exclude it; the report lists it and the user must mark it themselves. |
+| No odds for a match | Exclude it; the report lists it and the user must mark it themselves. The chance figure covers analysed matches only. |
 | No public split | Continue; hit chance only, no crowding numbers. |
 | Estimated public split | Continue; label it "estimated" wherever it appears. |
 | Odds older than a few hours | Ask for fresh ones; the engine drops quotes older than 6 h. |

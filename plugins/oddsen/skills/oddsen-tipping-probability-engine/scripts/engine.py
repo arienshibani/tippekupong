@@ -108,9 +108,16 @@ def _parse_time(text):
     return datetime.fromisoformat(text.replace("Z", "+00:00")).astimezone(timezone.utc)
 
 
+def _num(value):
+    """Float from a number or a string; accepts Norwegian decimal commas ("2,10")."""
+    if isinstance(value, str):
+        value = value.strip().replace(",", ".")
+    return float(value)
+
+
 def _valid_odds(odds):
     try:
-        return all(float(odds[k]) > 1.0 for k in OUTCOMES)
+        return all(_num(odds[k]) > 1.0 for k in OUTCOMES)
     except (KeyError, TypeError, ValueError):
         return False
 
@@ -121,9 +128,9 @@ def consensus_for_match(match, method, now, max_age_hours):
         book = quote.get("book", "unknown")
         odds = quote.get("odds")
         if not _valid_odds(odds):
-            dropped.append({"book": book, "reason": "incomplete or invalid H/U/B odds"})
+            dropped.append({"book": book, "reason": "need decimal odds above 1.00 for H, U and B"})
             continue
-        odds = {k: float(odds[k]) for k in OUTCOMES}
+        odds = {k: _num(odds[k]) for k in OUTCOMES}
         fetched = quote.get("fetched_at")
         undated = fetched is None
         if not undated:

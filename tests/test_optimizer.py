@@ -126,6 +126,12 @@ class Validation(unittest.TestCase):
         with self.assertRaises(opt.InputError):
             opt.optimize({"row_price_nok": 1, "budget_nok": 1, "matches": [match([0.5, 0.3, 0.3])]})
 
+    def test_percentages_instead_of_fractions_get_a_hint(self):
+        with self.assertRaises(opt.InputError) as ctx:
+            opt.optimize({"row_price_nok": 1, "budget_nok": 1,
+                          "matches": [{"slot": 1, "p": {"H": 51, "U": 27, "B": 22}}]})
+        self.assertIn("fractions", str(ctx.exception))
+
     def test_budget_below_one_row(self):
         with self.assertRaises(opt.InputError):
             opt.optimize(dict(EXAMPLE, row_price_nok=5, budget_nok=4))
