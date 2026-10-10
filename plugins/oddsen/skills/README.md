@@ -4,6 +4,8 @@ One folder per skill: `<skill-name>/SKILL.md`, plus optional `references/` and `
 
 Available:
 
+- `oddsen-tipping-coupon`: orchestrator that runs the Tipping pipeline end to end on pasted data.
+- `oddsen-tipping-coupon-output`: the final report (marks, reasons, risks, cost as % of bankroll, copyable grid).
 - `oddsen-tipping-value-model`: bounded, sourced news adjustments to fair probabilities, compared with the public split.
 - `oddsen-tipping-probability-engine`: de-vigs 1X2 odds from several books into fair probabilities with a consensus and spread.
 - `oddsen-tipping-coupon-optimizer`: marks and half/full covers for a Tipping pool coupon within a budget.

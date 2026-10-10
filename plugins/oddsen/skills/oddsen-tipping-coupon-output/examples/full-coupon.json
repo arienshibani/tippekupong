@@ -1,0 +1,612 @@
+{
+  "bankroll_nok": 1000,
+  "cap_pct": 2,
+  "now": "2026-10-10T12:00:00Z",
+  "coupon": {
+    "name": "Illustrative Saturday coupon",
+    "deadline_utc": "2026-10-10T15:00:00Z",
+    "url": "https://example.invalid/coupon"
+  },
+  "optimizer_result": {
+    "risk": "balanced",
+    "row_price_nok": 1.0,
+    "plans": [
+      {
+        "tier": "cheap",
+        "rows": 8,
+        "cost_nok": 8.0,
+        "p_all_correct": 0.05022767231999999,
+        "one_in": 20,
+        "mean_row_value_index": 0.5859,
+        "win_value_index": 0.5434,
+        "marks": [
+          {
+            "slot": 1,
+            "label": "Illustrative A - B",
+            "outcomes": [
+              "H"
+            ],
+            "mark": "1",
+            "cover": "single",
+            "p_covered": 0.51,
+            "value_ratio": {
+              "H": 0.823,
+              "U": 1.35,
+              "B": 1.222
+            }
+          },
+          {
+            "slot": 2,
+            "label": "Illustrative C - D",
+            "outcomes": [
+              "H",
+              "U"
+            ],
+            "mark": "1X",
+            "cover": "half",
+            "p_covered": 0.7,
+            "value_ratio": {
+              "H": 0.889,
+              "U": 1.111,
+              "B": 1.071
+            }
+          },
+          {
+            "slot": 3,
+            "label": "Illustrative E - F",
+            "outcomes": [
+              "H",
+              "B"
+            ],
+            "mark": "12",
+            "cover": "half",
+            "p_covered": 0.72,
+            "value_ratio": {
+              "H": 1.5,
+              "U": 1.4,
+              "B": 0.7
+            }
+          },
+          {
+            "slot": 4,
+            "label": "Illustrative G - H",
+            "outcomes": [
+              "H"
+            ],
+            "mark": "1",
+            "cover": "single",
+            "p_covered": 0.59,
+            "value_ratio": {
+              "H": 0.819,
+              "U": 1.375,
+              "B": 1.583
+            }
+          },
+          {
+            "slot": 5,
+            "label": "Illustrative I - J",
+            "outcomes": [
+              "H",
+              "B"
+            ],
+            "mark": "12",
+            "cover": "half",
+            "p_covered": 0.69,
+            "value_ratio": {
+              "H": 1.059,
+              "U": 1.033,
+              "B": 0.917
+            }
+          },
+          {
+            "slot": 6,
+            "label": "Illustrative K - L",
+            "outcomes": [
+              "B"
+            ],
+            "mark": "2",
+            "cover": "single",
+            "p_covered": 0.48,
+            "value_ratio": {
+              "H": 1.136,
+              "U": 1.5,
+              "B": 0.8
+            }
+          }
+        ]
+      },
+      {
+        "tier": "base",
+        "rows": 16,
+        "cost_nok": 16.0,
+        "p_all_correct": 0.078480738,
+        "one_in": 13,
+        "mean_row_value_index": 0.8422,
+        "win_value_index": 0.7145,
+        "marks": [
+          {
+            "slot": 1,
+            "label": "Illustrative A - B",
+            "outcomes": [
+              "H"
+            ],
+            "mark": "1",
+            "cover": "single",
+            "p_covered": 0.51,
+            "value_ratio": {
+              "H": 0.823,
+              "U": 1.35,
+              "B": 1.222
+            }
+          },
+          {
+            "slot": 2,
+            "label": "Illustrative C - D",
+            "outcomes": [
+              "H",
+              "U"
+            ],
+            "mark": "1X",
+            "cover": "half",
+            "p_covered": 0.7,
+            "value_ratio": {
+              "H": 0.889,
+              "U": 1.111,
+              "B": 1.071
+            }
+          },
+          {
+            "slot": 3,
+            "label": "Illustrative E - F",
+            "outcomes": [
+              "H",
+              "B"
+            ],
+            "mark": "12",
+            "cover": "half",
+            "p_covered": 0.72,
+            "value_ratio": {
+              "H": 1.5,
+              "U": 1.4,
+              "B": 0.7
+            }
+          },
+          {
+            "slot": 4,
+            "label": "Illustrative G - H",
+            "outcomes": [
+              "H"
+            ],
+            "mark": "1",
+            "cover": "single",
+            "p_covered": 0.59,
+            "value_ratio": {
+              "H": 0.819,
+              "U": 1.375,
+              "B": 1.583
+            }
+          },
+          {
+            "slot": 5,
+            "label": "Illustrative I - J",
+            "outcomes": [
+              "H",
+              "B"
+            ],
+            "mark": "12",
+            "cover": "half",
+            "p_covered": 0.69,
+            "value_ratio": {
+              "H": 1.059,
+              "U": 1.033,
+              "B": 0.917
+            }
+          },
+          {
+            "slot": 6,
+            "label": "Illustrative K - L",
+            "outcomes": [
+              "B",
+              "U"
+            ],
+            "mark": "X2",
+            "cover": "half",
+            "p_covered": 0.75,
+            "value_ratio": {
+              "H": 1.136,
+              "U": 1.5,
+              "B": 0.8
+            }
+          }
+        ]
+      },
+      {
+        "tier": "max",
+        "rows": 48,
+        "cost_nok": 48.0,
+        "p_all_correct": 0.17395559999999996,
+        "one_in": 6,
+        "mean_row_value_index": 1.1294,
+        "win_value_index": 0.8847,
+        "marks": [
+          {
+            "slot": 1,
+            "label": "Illustrative A - B",
+            "outcomes": [
+              "H",
+              "U"
+            ],
+            "mark": "1X",
+            "cover": "half",
+            "p_covered": 0.78,
+            "value_ratio": {
+              "H": 0.823,
+              "U": 1.35,
+              "B": 1.222
+            }
+          },
+          {
+            "slot": 2,
+            "label": "Illustrative C - D",
+            "outcomes": [
+              "H",
+              "U"
+            ],
+            "mark": "1X",
+            "cover": "half",
+            "p_covered": 0.7,
+            "value_ratio": {
+              "H": 0.889,
+              "U": 1.111,
+              "B": 1.071
+            }
+          },
+          {
+            "slot": 3,
+            "label": "Illustrative E - F",
+            "outcomes": [
+              "H",
+              "B"
+            ],
+            "mark": "12",
+            "cover": "half",
+            "p_covered": 0.72,
+            "value_ratio": {
+              "H": 1.5,
+              "U": 1.4,
+              "B": 0.7
+            }
+          },
+          {
+            "slot": 4,
+            "label": "Illustrative G - H",
+            "outcomes": [
+              "H"
+            ],
+            "mark": "1",
+            "cover": "single",
+            "p_covered": 0.59,
+            "value_ratio": {
+              "H": 0.819,
+              "U": 1.375,
+              "B": 1.583
+            }
+          },
+          {
+            "slot": 5,
+            "label": "Illustrative I - J",
+            "outcomes": [
+              "H",
+              "B",
+              "U"
+            ],
+            "mark": "1X2",
+            "cover": "full",
+            "p_covered": 1.0,
+            "value_ratio": {
+              "H": 1.059,
+              "U": 1.033,
+              "B": 0.917
+            }
+          },
+          {
+            "slot": 6,
+            "label": "Illustrative K - L",
+            "outcomes": [
+              "B",
+              "U"
+            ],
+            "mark": "X2",
+            "cover": "half",
+            "p_covered": 0.75,
+            "value_ratio": {
+              "H": 1.136,
+              "U": 1.5,
+              "B": 0.8
+            }
+          }
+        ]
+      }
+    ],
+    "warnings": [
+      "match 2 (Illustrative C - D): public split is an estimate, not observed"
+    ]
+  },
+  "matches": [
+    {
+      "slot": 1,
+      "label": "Illustrative A - B",
+      "status": "ok",
+      "p_fair": {
+        "H": 0.51,
+        "U": 0.27,
+        "B": 0.22
+      },
+      "p_est": {
+        "H": 0.51,
+        "U": 0.27,
+        "B": 0.22
+      },
+      "change_pp": {
+        "H": 0.0,
+        "U": 0.0,
+        "B": 0.0
+      },
+      "q": {
+        "H": 0.62,
+        "U": 0.2,
+        "B": 0.18
+      },
+      "q_estimated": false,
+      "value_ratio": {
+        "H": 0.823,
+        "U": 1.35,
+        "B": 1.222
+      },
+      "applied": [],
+      "rejected": [],
+      "risk_flags": [],
+      "confidence": "high",
+      "confidence_reasons": []
+    },
+    {
+      "slot": 2,
+      "label": "Illustrative C - D",
+      "status": "ok",
+      "p_fair": {
+        "H": 0.4,
+        "U": 0.3,
+        "B": 0.3
+      },
+      "p_est": {
+        "H": 0.4,
+        "U": 0.3,
+        "B": 0.3
+      },
+      "change_pp": {
+        "H": 0.0,
+        "U": 0.0,
+        "B": 0.0
+      },
+      "q": {
+        "H": 0.45,
+        "U": 0.27,
+        "B": 0.28
+      },
+      "q_estimated": true,
+      "value_ratio": {
+        "H": 0.889,
+        "U": 1.111,
+        "B": 1.071
+      },
+      "applied": [],
+      "rejected": [
+        {
+          "outcome": "H",
+          "delta_pp": -4,
+          "reason": "Rumoured rotation before a cup tie",
+          "source": "press preview (illustrative)",
+          "source_time": null,
+          "why": "unconfirmed; recorded as a risk flag, not a number"
+        }
+      ],
+      "risk_flags": [
+        "unconfirmed: H -4 pp (Rumoured rotation before a cup tie); not applied"
+      ],
+      "confidence": "low",
+      "confidence_reasons": [
+        "probability engine confidence was low (single book, disagreement or undated)",
+        "public split is an estimate",
+        "unconfirmed team news"
+      ]
+    },
+    {
+      "slot": 3,
+      "label": "Illustrative E - F",
+      "status": "ok",
+      "p_fair": {
+        "H": 0.3,
+        "U": 0.28,
+        "B": 0.42
+      },
+      "p_est": {
+        "H": 0.3,
+        "U": 0.28,
+        "B": 0.42
+      },
+      "change_pp": {
+        "H": 0.0,
+        "U": 0.0,
+        "B": 0.0
+      },
+      "q": {
+        "H": 0.2,
+        "U": 0.2,
+        "B": 0.6
+      },
+      "q_estimated": false,
+      "value_ratio": {
+        "H": 1.5,
+        "U": 1.4,
+        "B": 0.7
+      },
+      "applied": [],
+      "rejected": [],
+      "risk_flags": [],
+      "confidence": "high",
+      "confidence_reasons": []
+    },
+    {
+      "slot": 4,
+      "label": "Illustrative G - H",
+      "status": "ok",
+      "p_fair": {
+        "H": 0.62,
+        "U": 0.22,
+        "B": 0.16
+      },
+      "p_est": {
+        "H": 0.59,
+        "U": 0.22,
+        "B": 0.19
+      },
+      "change_pp": {
+        "H": -3.0,
+        "U": 0.0,
+        "B": 3.0
+      },
+      "q": {
+        "H": 0.72,
+        "U": 0.16,
+        "B": 0.12
+      },
+      "q_estimated": false,
+      "value_ratio": {
+        "H": 0.819,
+        "U": 1.375,
+        "B": 1.583
+      },
+      "applied": [
+        {
+          "outcome": "H",
+          "delta_pp": -3.0,
+          "reason": "Starting striker ruled out, announced 10:15",
+          "source": "club site (illustrative)",
+          "source_time": "2026-10-10T10:20:00Z"
+        },
+        {
+          "outcome": "B",
+          "delta_pp": 3.0,
+          "reason": "Mirror of the same news",
+          "source": "club site (illustrative)",
+          "source_time": "2026-10-10T10:20:00Z"
+        }
+      ],
+      "rejected": [],
+      "risk_flags": [],
+      "confidence": "high",
+      "confidence_reasons": []
+    },
+    {
+      "slot": 5,
+      "label": "Illustrative I - J",
+      "status": "ok",
+      "p_fair": {
+        "H": 0.36,
+        "U": 0.31,
+        "B": 0.33
+      },
+      "p_est": {
+        "H": 0.36,
+        "U": 0.31,
+        "B": 0.33
+      },
+      "change_pp": {
+        "H": 0.0,
+        "U": 0.0,
+        "B": 0.0
+      },
+      "q": {
+        "H": 0.34,
+        "U": 0.3,
+        "B": 0.36
+      },
+      "q_estimated": false,
+      "value_ratio": {
+        "H": 1.059,
+        "U": 1.033,
+        "B": 0.917
+      },
+      "applied": [],
+      "rejected": [],
+      "risk_flags": [],
+      "confidence": "high",
+      "confidence_reasons": []
+    },
+    {
+      "slot": 6,
+      "label": "Illustrative K - L",
+      "status": "ok",
+      "p_fair": {
+        "H": 0.25,
+        "U": 0.27,
+        "B": 0.48
+      },
+      "p_est": {
+        "H": 0.25,
+        "U": 0.27,
+        "B": 0.48
+      },
+      "change_pp": {
+        "H": 0.0,
+        "U": 0.0,
+        "B": 0.0
+      },
+      "q": {
+        "H": 0.22,
+        "U": 0.18,
+        "B": 0.6
+      },
+      "q_estimated": false,
+      "value_ratio": {
+        "H": 1.136,
+        "U": 1.5,
+        "B": 0.8
+      },
+      "applied": [],
+      "rejected": [],
+      "risk_flags": [],
+      "confidence": "high",
+      "confidence_reasons": []
+    },
+    {
+      "slot": 7,
+      "label": "Illustrative M - N (no odds found)",
+      "status": "no_market",
+      "p_est": null
+    }
+  ],
+  "excluded": [
+    {
+      "slot": 7,
+      "label": "Illustrative M - N (no odds found)",
+      "reason": "no usable market"
+    }
+  ],
+  "sources": [
+    {
+      "name": "Sharp book (illustrative)",
+      "fetched_at": "2026-10-10T11:40:00Z"
+    },
+    {
+      "name": "Public split (illustrative)",
+      "fetched_at": "2026-10-10T11:30:00Z"
+    }
+  ],
+  "why": {
+    "1": "Home side likeliest, but 62 % of the public back it; the draw and away win are under-backed"
+  },
+  "notes": [
+    "Lineups are announced about 90 minutes before kick-off; re-run if they change."
+  ]
+}

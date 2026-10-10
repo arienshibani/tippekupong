@@ -83,7 +83,10 @@ Suggested build order: pool math + optimizer first (pure maths, testable offline
 
 | Skill | Status |
 |---|---|
+| `oddsen-tipping-coupon` (orchestrator) | Built; works on pasted data; needs testing in Claude.ai and Claude Code |
+| `oddsen-tipping-coupon-output` | Built, tested; needs testing in Claude.ai and Claude Code |
 | `oddsen-tipping-value-model` | Built, tested; needs testing in Claude.ai and Claude Code |
 | `oddsen-tipping-probability-engine` | Built, tested; needs testing in Claude.ai and Claude Code |
 | `oddsen-tipping-coupon-optimizer` (pool math in `shared/tipping-pool-math.md`) | Built, tested; needs testing in Claude.ai and Claude Code |
-| Everything else | Not started |
+| `oddsen-tipping-fixtures`, `-market-odds`, `-public-split`, `-team-context` (the fetchers) | Not started; blocked on checking Norsk Tipping terms and public endpoints |
+| Phases 1-4 | Not started |
