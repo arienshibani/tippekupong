@@ -97,7 +97,7 @@ Every object that holds fetched data carries a `Source`. Team names are normalis
 - **Input:** `p_fair`, `q`, context from stage 4.
 - **Output per match:** `{ p_est: Probs, adjustments: [{outcome, delta_pp, reason, source}], q: Probs, value_ratio: Probs, confidence }`.
 - **Logic:**
-  1. The LLM proposes adjustments to `p_fair`, each with an outcome, a size in percentage points, a reason and a source. Hard cap ±5 pp per outcome, ±8 pp total per match. Anything larger needs the user's explicit OK.
+  1. The LLM proposes adjustments to `p_fair`, each with an outcome, a size in percentage points, a reason and a source. Hard cap ±5 pp net per outcome and 8 pp in total (sum of absolute changes) per match. Anything larger needs the user's explicit OK. News the market has probably priced in is not applied.
   2. A script applies the adjustments, renormalises, and computes `value_ratio = p_est / q`.
   3. `confidence` combines: book spread (low is good), `q` observed vs estimated, news freshness, and number of adjustments (many adjustments lower confidence).
 - Late news is the main reason a price looks wrong. If a key absence is unconfirmed, the adjustment is recorded as "unconfirmed" and the match gets a risk flag instead of a number.
