@@ -97,11 +97,69 @@ class Optimality(unittest.TestCase):
         probs = [p["p_all_correct"] for p in opt.optimize(data)["plans"]]
         self.assertEqual(probs, sorted(probs))
 
+    def test_each_plan_reports_the_budget_it_was_built_for(self):
+        data = dict(EXAMPLE, row_price_nok=1, budget_nok=4, max_budget_nok=9, risk="safe")
+        plans = {p["tier"]: p for p in opt.optimize(data)["plans"]}
+        self.assertEqual(plans["cheap"]["tier_budget_nok"], 2)
+        self.assertEqual(plans["base"]["tier_budget_nok"], 4)
+        self.assertEqual(plans["max"]["tier_budget_nok"], 9)
+        for p in plans.values():
+            self.assertLessEqual(p["cost_nok"], p["tier_budget_nok"])
+
     def test_full_cover_when_budget_allows(self):
         data = dict(EXAMPLE, budget_nok=27, risk="safe")
         plan = opt.optimize(data)["plans"][-1]
         self.assertAlmostEqual(plan["p_all_correct"], 1.0, places=9)
         self.assertEqual(plan["rows"], 27)
+
+
+class BankrollCap(unittest.TestCase):
+    matches = [{"slot": i, "label": f"m{i}", "p": {"H": .45, "U": .30, "B": .25}} for i in range(1, 9)]
+
+    def run_opt(self, **kw):
+        data = {"row_price_nok": 2, "budget_nok": 100, "bankroll_nok": 2500, "risk": "safe", "matches": self.matches}
+        data.update(kw)
+        return opt.optimize(data)
+
+    def test_over_cap_budget_is_cut_to_the_cap(self):
+        res = self.run_opt()  # 100 NOK is 4 % of 2500 NOK; the 2 % cap is 50 NOK
+        self.assertTrue(res["budget_capped"])
+        self.assertEqual(res["requested_budget_nok"], 100)
+        self.assertEqual(res["budget_nok"], 50)
+        for plan in res["plans"]:
+            self.assertLessEqual(plan["cost_nok"], 50 + 1e-9)
+        self.assertTrue(any("above the 2 % cap" in w and "built at the cap (50 NOK)" in w for w in res["warnings"]))
+
+    def test_budget_that_was_never_exactly_twice_the_cap_is_cut_too(self):
+        for budget in (120, 150, 999):
+            res = self.run_opt(budget_nok=budget)
+            self.assertLessEqual(max(p["cost_nok"] for p in res["plans"]), 50 + 1e-9, budget)
+
+    def test_max_budget_above_the_cap_is_cut_and_tiers_merge(self):
+        res = self.run_opt(budget_nok=50, max_budget_nok=500)
+        self.assertLessEqual(max(p["cost_nok"] for p in res["plans"]), 50 + 1e-9)
+        self.assertTrue(any("max budget" in w for w in res["warnings"]))
+
+    def test_budget_within_the_cap_is_untouched(self):
+        res = self.run_opt(budget_nok=40)
+        self.assertFalse(res["budget_capped"])
+        self.assertEqual(res["budget_nok"], 40)
+
+    def test_user_set_cap_is_used(self):
+        res = self.run_opt(budget_nok=100, cap_pct=4)
+        self.assertFalse(res["budget_capped"])
+        res = self.run_opt(budget_nok=100, cap_pct=1)
+        self.assertEqual(res["budget_nok"], 25)
+
+    def test_cap_below_one_row_is_an_error(self):
+        with self.assertRaises(opt.InputError):
+            self.run_opt(bankroll_nok=50, row_price_nok=2)  # 2 % of 50 NOK = 1 NOK < one row
+
+    def test_without_a_bankroll_nothing_is_capped(self):
+        data = {"row_price_nok": 2, "budget_nok": 100, "risk": "safe", "matches": self.matches}
+        res = opt.optimize(data)
+        self.assertFalse(res["budget_capped"])
+        self.assertEqual(res["budget_nok"], 100)
 
 
 class RiskPreference(unittest.TestCase):
@@ -126,11 +184,34 @@ class Validation(unittest.TestCase):
         with self.assertRaises(opt.InputError):
             opt.optimize({"row_price_nok": 1, "budget_nok": 1, "matches": [match([0.5, 0.3, 0.3])]})
 
-    def test_percentages_instead_of_fractions_get_a_hint(self):
+    def test_clean_percentages_are_accepted_silently(self):
+        data = {"row_price_nok": 1, "budget_nok": 1, "matches": [
+            {"slot": 1, "label": "x", "p": {"H": 51, "U": 27, "B": 22}}]}
+        result = opt.optimize(data)
+        self.assertEqual([w for w in result["warnings"] if "percentages" in w], [])
+        self.assertAlmostEqual(result["plans"][-1]["marks"][0]["p_covered"], 0.51, places=2)
+
+    def test_percentages_that_do_not_add_to_100_are_noted(self):
+        data = {"row_price_nok": 1, "budget_nok": 3, "matches": [
+            {"slot": 1, "label": "x", "p": {"H": 51, "U": 27, "B": 23}}]}
+        result = opt.optimize(data)
+        self.assertTrue(any("given as percentages adding to 101 %; divided by the total" in w for w in result["warnings"]))
+
+    def test_rounding_errors_are_rescaled_not_rejected(self):
+        for triple in ({"H": .48, "U": .27, "B": .26}, {"H": 48, "U": 27, "B": 26}, {"H": 0.5, "U": 0.3, "B": 0.21}):
+            result = opt.optimize({"row_price_nok": 1, "budget_nok": 2,
+                                   "matches": [{"slot": 1, "label": "x", "p": triple}]})
+            self.assertTrue(any("divided by the total" in w for w in result["warnings"]), triple)
+
+    def test_nonsense_totals_are_rejected_and_all_failing_matches_are_listed(self):
+        bad = {"H": 0.5, "U": 0.3, "B": 0.3}  # adds to 1.1
         with self.assertRaises(opt.InputError) as ctx:
-            opt.optimize({"row_price_nok": 1, "budget_nok": 1,
-                          "matches": [{"slot": 1, "p": {"H": 51, "U": 27, "B": 22}}]})
-        self.assertIn("fractions", str(ctx.exception))
+            opt.optimize({"row_price_nok": 1, "budget_nok": 2, "matches": [
+                {"slot": 1, "p": bad}, {"slot": 2, "p": {"H": .5, "U": .3, "B": .2}}, {"slot": 3, "p": bad}]})
+        message = str(ctx.exception)
+        self.assertIn("match 1", message)
+        self.assertIn("match 3", message)
+        self.assertNotIn("match 2", message)
 
     def test_budget_below_one_row(self):
         with self.assertRaises(opt.InputError):

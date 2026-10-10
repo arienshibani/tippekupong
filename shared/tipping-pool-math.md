@@ -2,7 +2,7 @@
 
 Math for Norsk Tipping's pool games (Tipping: 1X2 rows on a fixed list of matches). Read `odds-math.md` first for implied probability, margin and de-vig.
 
-**Rules marked TO VERIFY must be checked against Norsk Tipping's current game rules before a skill states them as fact:** number of matches per coupon, price per row, payout tiers (all correct vs. one or two wrong), whether payout is a fixed share of a pool, jackpot/carry-over rules.
+**The payout rules (12/11/10 correct, shares of the turnover, rounding, the 10 kr minimum, the row price of 1 NOK) are documented in `tipping-payout-rules.md` with their evidence.** This file keeps the simpler maths about the chance of a *fully correct* row, which still describes the 12-correct tier; the optimizer in `oddsen-tipping-coupon-optimizer` (`build.py`) uses the full three-tier payout model instead.
 
 ## Fixed odds vs. pool
 
@@ -13,7 +13,7 @@ Math for Norsk Tipping's pool games (Tipping: 1X2 rows on a fixed list of matche
 | Staking | Fractional Kelly applies | Fixed price per row, so Kelly does not apply. Budget = rows × row price |
 | Margin | Bookmaker overround | Pool takeout (the share not paid out) (TO VERIFY) |
 
-Consequence: a pool is a negative-EV game on average because of the takeout. A coupon can only be *less bad* or, rarely, slightly positive when the pool is boosted (jackpot/carry-over) and the picks are well under-owned. Say this plainly in every output.
+Consequence: a pool is a negative-EV game on average because of the takeout (45 % of turnover is not paid out; 8 % of turnover goes to a bonus pool that pays only in some rounds). A coupon can only be *less bad* or, rarely, slightly positive when the pool is boosted (jackpot/carry-over) and the picks are well under-owned. Say this plainly in every output.
 
 ## Quantities
 

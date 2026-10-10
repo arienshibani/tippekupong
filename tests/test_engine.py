@@ -124,8 +124,40 @@ class Consensus(unittest.TestCase):
     def test_bad_method_is_rejected(self):
         with self.assertRaises(eng.InputError):
             eng.run({"method": "magic", "matches": [{"quotes": []}]})
+        empty = eng.run({"matches": []})  # allowed: nothing on the coupon had bookmaker odds
+        self.assertEqual((empty["matches"], empty["optimizer_matches"]), ([], []))
+
+
+class SecondRunFixes(unittest.TestCase):
+    def test_time_without_a_zone_is_dropped_with_a_clear_reason(self):
+        m = run([quote("a", 2.0, 3.5, 4.2, fetched="2026-10-10T11:00:00")])
+        self.assertEqual(m["status"], "no_market")
+        self.assertIn("offset", m["dropped"][0]["reason"])
+
+    def test_offset_times_are_converted_not_misread(self):
+        # 13:30 at +02:00 is 11:30 UTC, i.e. 30 minutes old at 12:00 UTC.
+        m = run([quote("a", 2.0, 3.5, 4.2, fetched="2026-10-10T13:30:00+02:00")], max_age_hours=1)
+        self.assertEqual(m["status"], "ok")
+        # 07:00 at +02:00 is 05:00 UTC, i.e. 7 h old.
+        m = run([quote("a", 2.0, 3.5, 4.2, fetched="2026-10-10T07:00:00+02:00")])
+        self.assertIn("stale", m["dropped"][0]["reason"])
+
+    def test_now_without_a_zone_is_an_input_error(self):
         with self.assertRaises(eng.InputError):
-            eng.run({"matches": []})
+            eng.run({"now": "2026-10-10T12:00:00", "matches": [{"quotes": []}]})
+
+    def test_excluded_entries_carry_the_dropped_reasons(self):
+        result = eng.run({"now": NOW, "matches": [{"slot": 5, "label": "x", "quotes": [
+            quote("old", 2.3, 3.3, 3.1, fetched="2026-10-10T04:00:00Z")]}]})
+        entry = result["excluded"][0]
+        self.assertEqual(entry["slot"], 5)
+        self.assertIn("stale (8.0 h old)", entry["dropped"][0]["reason"])
+
+    def test_text_mode_shows_margin_weight_and_time_per_book(self):
+        text = eng.to_text(eng.run(EXAMPLE))
+        self.assertIn("margin", text)
+        self.assertIn("weight", text)
+        self.assertIn("taken 2026-10-10T11:40:00Z", text)
 
 
 class ExampleAndHandoff(unittest.TestCase):

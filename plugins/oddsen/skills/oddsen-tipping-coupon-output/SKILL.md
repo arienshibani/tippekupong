@@ -1,81 +1,69 @@
 ---
 name: oddsen-tipping-coupon-output
-description: Writes the final Tipping kupong recommendation as a readable report with marks, half/full covers, reasoning, risks, cost in NOK and as a share of the bankroll, and a copyable row grid. Use when the user wants the finished coupon, a summary to fill in, or an explanation of the picks.
+description: Writes the final Tipping kupong recommendation as a readable report: the marks and covers per match, reasons, risks, the chance of a prize and expected payout compared with following the public, cost in NOK and as a share of the bankroll, and a copyable row grid. Use when the user wants the finished coupon, a summary to fill in, or an explanation of the picks.
 ---
 
 # Tipping coupon output
 
-Turns the optimizer's plans and the value model's match data into the report the user actually reads: which mark on each match, why, how much it costs relative to their bankroll, what could be wrong, and a grid they can copy into their own coupon. A script builds the report so the required parts (cost as a share of bankroll, caveats, sources, closing text) are always present.
+Turns the optimizer's plans and the value model's match data into the report the user reads: which mark on each match, why, what it costs relative to their bankroll, the chance of winning something, what the coupon is worth in expectation compared with other ways to play, what could be wrong, and a grid they can copy into their own coupon. A script builds the report so the required parts (cost as a share of bankroll, caveats, sources with times, the closing text) are always present.
 
 ## Before you start
 
 - Read `references/responsible-gambling.md` and follow it.
-- Read `references/tipping-pool-math.md` if the user asks what the numbers mean.
-- You need the output of `oddsen-tipping-coupon-optimizer` (all tiers) and of `oddsen-tipping-value-model` (the `matches` and `excluded` lists). If either is missing, run that skill first.
+- Read `references/tipping-payout-rules.md` if the user asks how the prizes work or what a number means.
+- You need the files from the earlier stages: `build.json` (optimizer), `value.json` (value model), `coupon.json` (fixtures) and, if bookmaker odds were used, `odds.json`.
 
 ## Inputs
 
 | Input | Required | Default |
 |---|---|---|
-| Bankroll (NOK) | yes | none, so ask |
-| Cap on coupon cost, % of bankroll | no | 2 |
-| `optimizer_result` (all tiers) | yes | none |
-| Value-model `matches` and `excluded` | yes, for reasons and risks | none |
-| Coupon name, deadline (UTC), public coupon URL | no | omitted |
-| Sources with names, URLs and fetch times | yes in practice | the report warns if missing |
-| `why`: your own one-line reason per match | no | auto text from the numbers |
-| `notes`: extra caveats | no | none |
+| `--build`, `--value`, `--coupon` files | yes | none |
+| `--odds` file | if odds were fetched | omitted from the sources |
+| `--bankroll` (NOK) | yes | none, so ask |
+| `--cap-pct` | only if the user set their own cap | omit: the default 2 % applies and the report calls it "the default cap" |
+| `--why "3=one line"` (repeatable) | no | auto text from the numbers |
+| `--note "text"` (repeatable) | no | none |
+| `--source "name|ISO time|url"` (repeatable; leave the time empty for a static source) | no | none |
+| `--now` | no | the machine clock; only set it to replay old data |
 
 ## Steps
 
-1. Collect the inputs. Never invent a source or a time; if a time is unknown, leave it out and the report will say so.
-2. Write a short `why` for each match in your own words. Base it on the numbers (probability, public share, news) and keep it to one line. Do not describe any pick as safe, certain, a lock or a banker; the script rejects those words.
-3. Build the JSON (see `examples/full-coupon.json`) and run:
+1. Write a short `--why` for the matches where you have something real to say (news, a flat match, why a cover is there). Base it on the numbers; keep it to one line. Do not describe any pick as safe, certain, a lock or a banker; the script rejects those words.
+2. Run the script from this skill's folder:
 
    ```bash
-   python3 scripts/render.py input.json            # markdown
-   python3 scripts/render.py input.json --json     # markdown + warnings + recommended tier
+   python3 scripts/render.py --build build.json --value value.json --coupon coupon.json --odds odds.json \
+       --bankroll 3000 --note "..." --why "4=Striker out, announced 18:30" --out report.md
    ```
 
-4. Read the report. If there are warnings (cost over the cap, stale sources, passed deadline), say them plainly before the table.
-5. Show the report to the user. Offer to re-run with a different budget tier, risk preference, or after new team news. Do not offer to raise the budget to chase a loss.
+   Without the file options, `render.py input.json` still takes a hand-written JSON (see `examples/full-coupon.json`).
+3. Read the report. If there are warnings (cost over the cap, a stale source, a passed deadline), say them plainly before the table.
+4. Show the report to the user (reply language: see the orchestrator). Offer to re-run after new team news or with another budget within the cap. Do not offer to raise the budget to chase a loss.
 
-### What the script does
+### What the report contains
 
-- Picks the recommended tier: the most expensive one that fits the cap, or the cheapest with a warning if none does.
-- Prints the cost in NOK and as a % of the bankroll for every tier, and marks which tiers fit the cap.
-- Builds the per-match table (mark, cover type, estimated probabilities, public split, reason, risk) and a copyable grid.
-- Lists matches that had no usable market and reminds the user that the coupon still needs a mark for each, and that a single mark leaves the cost unchanged while a cover multiplies it.
-- Adds caveats: independence assumption in the crowding numbers, estimated public splits, low-confidence matches, unconfirmed news, rules to verify.
-- Warns when a source is older than the limit (default 6 h), when the deadline is under an hour away or has passed, and when a plan buys every possible row.
-- Ends with the fixed closing text: estimated not certain, a pool loses on average, play only what you can afford, never raise the budget to win back a loss, and the Hjelpelinjen number.
+- Title with the round and date, deadline in Oslo time with time left, row price, strategy, bankroll, the pool.
+- **Recommended tier:** rows, cost in NOK and as a % of the bankroll; the chance of a prize (10, 11 or 12 correct) and of all 12; the expected payout per NOK with its standard error (differences under about 0.02 per NOK are noise), next to "follow the public" and "best chance of all 12" with their own row counts, and a verdict that follows the numbers ("a small edge" only if it beats the average ticket's 0.47 by at least 0.03; otherwise "about the same" or "below").
+- The per-match table (kick-off in Oslo time, mark, cover, estimated probabilities, public split, a short reason, risk) and a copyable grid. The reason is generated from the numbers and only says something beyond the table: the likeliest outcome, a flat match, a cover that includes a less likely outcome because fewer tippers back it, clearly under- or over-backed outcomes. Risk lists reasons for doubt (for example "no bookmaker odds") and notes (news applied), with "(low confidence)" at the end when it is low; a dash means nothing to flag.
+- **Same budget, other strategies:** the balanced plan next to the prize-chance plan and the two comparison coupons; a line says when the two plans are within the margin of error of each other (then pick the mix of marks you prefer).
+- **Budget tiers**, **news used** (the applied adjustments with source and time), **what could be wrong**, **sources with times** and the closing text with the Hjelpelinjen number.
+- Matches that were not analysed are listed with the reason (a "?" in the grid); if there are any, the chance figures are labelled "analysed matches only".
+- Warnings for a stale source, a deadline under an hour away or passed, a plan above the cap (heading "Cheapest plan … not recommended"), and a plan that buys every possible row.
 
-## Output format
-
-Present the script's markdown as is. Its layout is:
-
-1. Title, deadline, row price, preference, bankroll.
-2. Warnings (if any).
-3. **Recommended tier:** rows, cost, % of bankroll, chance of a fully correct row ("about 1 in N"), crowding.
-4. Table: `# | Match | Mark | Cover | p (est) 1/X/2 | Public 1/X/2 | Why | Risk`.
-5. Copyable grid, then any uncovered matches, then the link to the public coupon page if given.
-6. Budget tiers table.
-7. What could be wrong; sources with times; closing text.
-
-Marks use the coupon notation: `1` home win, `X` draw, `2` away win; `1X`, `X2`, `12` are half covers and `1X2` a full cover.
+Marks use coupon notation: `1` home win, `X` draw, `2` away win; `1X`, `X2`, `12` are half covers and `1X2` a full cover.
 
 ## Edge cases
 
-- **Cost above the cap:** the report warns and recommends the cheapest tier. Do not argue the user past their own cap. If they set a different cap, pass it as `cap_pct`.
-- **Deadline passed or very close:** say so first; odds and news are probably stale.
-- **Estimated public split or low confidence:** keep those labels visible; do not tidy them away.
-- **Matches with no market:** report them; never fill in a mark as if it had been analysed.
-- **The user asks for a "banker" or "sure" pick:** explain that no pick is certain; offer to show the most likely outcome per match with its estimated probability instead.
-- **The user mentions chasing losses, borrowing, or hiding play:** do not produce a bigger coupon. Respond per `responsible-gambling.md`, mention Hjelpelinjen (800 800 40, hjelpelinjen.no) and Norsk Tipping's tapsgrense and spillepause once, without lecturing.
+- **Cost above the cap:** the optimizer builds plans at the cap and the report says what was asked and what was cut. Do not argue the user past their own cap. If they calmly set a different cap of their own, pass it as `--cap-pct`.
+- **Deadline passed or very close:** say so first; the public split and odds have probably moved.
+- **No bookmaker odds for most matches:** the report says the probabilities rest on the expert tips and the public split, with little independent edge. Do not tidy that away.
+- **The user asks for a "banker" or "sure" pick:** say there is none, then give the likeliest outcome with its estimated probability and what it means (for example "about 76 %, which still fails roughly one time in four, and the coupon needs 10 matches right to pay anything"). Offer the likeliest outcome per match with probabilities.
+- **The user wants to win back a loss, raises their cap right after one, or mentions borrowing, debt, hiding play or being unable to stop:** do not produce a bigger coupon or offer a bigger tier, and keep the earlier or default cap. Respond per `responsible-gambling.md`: the report's closing line already contains the Hjelpelinjen number, so in your own words mention it once more with tapsgrense and spillepause (800 800 40, hjelpelinjen.no), kindly and without lecturing, and do not repeat it after that.
 - **No automation:** the report ends with the user filling in the coupon themselves. Never log in or submit anything for them.
 
 ## References
 
+- `references/tipping-payout-rules.md`
 - `references/tipping-pool-math.md`
 - `references/oddsen-glossary.md`
 - `references/responsible-gambling.md`

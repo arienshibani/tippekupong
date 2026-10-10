@@ -4,7 +4,13 @@ A shareable set of [Claude Skills](https://docs.claude.com/en/docs/agents-and-to
 
 The skills don't promise winners. They help you do the boring, disciplined parts well: turning odds into probabilities, comparing Oddsen against sharper markets, sizing stakes sensibly, and keeping an honest record of your results.
 
-> **Status:** scaffolding only. No skills are published yet. See [docs/ROADMAP.md](docs/ROADMAP.md) for the planned set.
+> **Status:** the Tipping coupon builder works end to end on live data (see below); the Oddsen value-bet skills in the roadmap are not built yet. Tested with fresh Claude sessions; not yet tried as an installed plugin in Claude.ai.
+
+## What works today: build a Tipping coupon
+
+Say "bygg kupongen for søndag, budsjett 50 kr, bankroll 3000 kr". The skills read the open round from Norsk Tipping's public data feed (no login, no key), add bookmaker odds where free ones exist, blend in Norsk Tipping's expert tips and the public split, apply any team news you give, and build the marks and half/full covers that give the best expected payout across the 12, 11 and 10-correct prizes. The report states the chance of winning a prize and the expected payout against following the public, and says plainly that a pool game pays out less than it takes in. You fill in the coupon yourself; nothing is placed for you. Rules and evidence: [shared/tipping-payout-rules.md](shared/tipping-payout-rules.md). Design and test history: [docs/COUPON-ARCHITECTURE.md](docs/COUPON-ARCHITECTURE.md), [docs/test-runs/](docs/test-runs/).
+
+The data feed is an unofficial one the Norsk Tipping website itself uses; it can change or be blocked, and I could not read a clause on automated access in their terms. See the architecture doc for what is and is not checked.
 
 ## Install
 
@@ -39,8 +45,13 @@ shared/                             References bundled into every skill
   odds-math.md                      Implied probability, margin, EV, Kelly
   oddsen-glossary.md                Oddsen / Norsk Tipping terms
   responsible-gambling.md           Guardrails every skill must follow
+  tipping-payout-rules.md           How the Tipping prizes are paid (12/11/10 correct), with evidence
+  tipping-pool-math.md              Pool maths and gardering
 templates/SKILL.template.md         Starting point for a new skill
 docs/ROADMAP.md                     Planned skills and open questions
+docs/COUPON-ARCHITECTURE.md         How the Tipping coupon builder works
+docs/test-runs/                     Fresh-Claude test reports and the fixes they led to
+tests/                              python3 -m unittest discover -s tests
 scripts/
   package-skills.sh                 Build uploadable zips into dist/
   validate_skills.py                Lint SKILL.md frontmatter and layout

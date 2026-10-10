@@ -1,23 +1,81 @@
 {
   "matches": [
-    {"slot": 1, "label": "Illustrative A - B",
-     "p_fair": {"H": 0.51, "U": 0.27, "B": 0.22}, "confidence": "ok",
-     "q": {"H": 0.62, "U": 0.20, "B": 0.18},
-     "adjustments": [
-       {"outcome": "H", "delta_pp": -3, "reason": "Starting striker ruled out, announced 10:15",
-        "source": "club site (illustrative)", "source_time": "2026-10-10T10:20:00Z", "status": "confirmed"},
-       {"outcome": "B", "delta_pp": 3, "reason": "Same news, mirrored on the away side",
-        "source": "club site (illustrative)", "source_time": "2026-10-10T10:20:00Z", "status": "confirmed"}
-     ]},
-    {"slot": 2, "label": "Illustrative C - D",
-     "p_fair": {"H": 0.40, "U": 0.30, "B": 0.30}, "confidence": "low",
-     "q": {"H": 0.45, "U": 0.27, "B": 0.28}, "q_estimated": true,
-     "adjustments": [
-       {"outcome": "H", "delta_pp": -4, "reason": "Rumoured rotation before a cup tie",
-        "source": "press conference preview (illustrative)", "status": "unconfirmed"},
-       {"outcome": "U", "delta_pp": 2, "reason": "Injury list published days ago",
-        "source": "league site (illustrative)", "status": "confirmed", "market_likely_priced_in": true}
-     ]},
-    {"slot": 3, "label": "Illustrative E - F (no odds found)", "p_fair": null}
+    {
+      "slot": 1,
+      "label": "Illustrative A - B",
+      "p_fair": {
+        "H": 0.51,
+        "U": 0.27,
+        "B": 0.22
+      },
+      "confidence": "ok",
+      "q": {
+        "H": 0.62,
+        "U": 0.2,
+        "B": 0.18
+      },
+      "adjustments": [
+        {
+          "outcome": "H",
+          "delta_pp": -3,
+          "reason": "Starting striker ruled out, announced 10:15",
+          "source": "club site (illustrative)",
+          "source_time": "2026-10-10T10:20:00Z",
+          "status": "confirmed"
+        },
+        {
+          "outcome": "B",
+          "delta_pp": 3,
+          "reason": "Same news, mirrored on the away side",
+          "source": "club site (illustrative)",
+          "source_time": "2026-10-10T10:20:00Z",
+          "status": "confirmed"
+        }
+      ]
+    },
+    {
+      "slot": 2,
+      "label": "Illustrative C - D",
+      "p_fair": {
+        "H": 0.4,
+        "U": 0.3,
+        "B": 0.3
+      },
+      "confidence": "low",
+      "q": {
+        "H": 0.45,
+        "U": 0.27,
+        "B": 0.28
+      },
+      "q_estimated": true,
+      "adjustments": [
+        {
+          "outcome": "H",
+          "delta_pp": -4,
+          "reason": "Rumoured rotation before a cup tie",
+          "source": "press conference preview (illustrative)",
+          "status": "unconfirmed"
+        },
+        {
+          "outcome": "U",
+          "delta_pp": 2,
+          "reason": "Injury list published days ago",
+          "source": "league site (illustrative)",
+          "status": "confirmed",
+          "market_likely_priced_in": true
+        }
+      ]
+    },
+    {
+      "slot": 3,
+      "label": "Illustrative E - F (no odds found)",
+      "p_fair": null,
+      "dropped": [
+        {
+          "book": "Retail book (illustrative)",
+          "reason": "stale (8.0 h old)"
+        }
+      ]
+    }
   ]
 }

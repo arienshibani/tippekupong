@@ -20,8 +20,8 @@ Input JSON:
       ]
     }
 
-Consensus weight of a quote is weight / max(margin, 0.01)^2, so low-margin (sharper) books
-count more. The result's "optimizer_matches" can be merged with a public split and passed to
+Consensus weight of a quote is weight / max(margin, 0.01), so low-margin (sharper) books
+count more (a 1 % margin counts about 5 times a 5 % margin). The result's "optimizer_matches" can be merged with a public split and passed to
 oddsen-tipping-coupon-optimizer. Standard library only. See shared/odds-math.md.
 """
 import json
@@ -105,7 +105,10 @@ def devig(odds, method):
 
 
 def _parse_time(text):
-    return datetime.fromisoformat(text.replace("Z", "+00:00")).astimezone(timezone.utc)
+    dt = datetime.fromisoformat(str(text).replace("Z", "+00:00"))
+    if dt.tzinfo is None:
+        raise ValueError(f"time {text!r} has no time zone; add Z or an offset such as +02:00")
+    return dt.astimezone(timezone.utc)
 
 
 def _num(value):
@@ -137,7 +140,7 @@ def consensus_for_match(match, method, now, max_age_hours):
             try:
                 age_h = (now - _parse_time(fetched)).total_seconds() / 3600
             except ValueError:
-                dropped.append({"book": book, "reason": f"unreadable timestamp {fetched!r}"})
+                dropped.append({"book": book, "reason": f"unreadable timestamp {fetched!r} (use an ISO time with Z or an offset such as +02:00)"})
                 continue
             if age_h > max_age_hours:
                 dropped.append({"book": book, "reason": f"stale ({age_h:.1f} h old)"})
@@ -146,7 +149,7 @@ def consensus_for_match(match, method, now, max_age_hours):
         p, used, note = devig(odds, method)
         if note:
             notes.append(f"{book}: {note}")
-        weight = float(quote.get("weight", 1.0)) / max(margin, MARGIN_FLOOR) ** 2
+        weight = float(quote.get("weight", 1.0)) / max(margin, MARGIN_FLOOR)
         used_quotes.append({"book": book, "p": p, "margin": margin, "weight": weight,
                             "fetched_at": fetched, "undated": undated, "method": used})
     if not used_quotes:
@@ -189,18 +192,23 @@ def run(data):
     if method not in METHODS:
         raise InputError(f"method must be one of {METHODS}")
     max_age = float(data.get("max_age_hours", 6))
-    now = _parse_time(data["now"]) if data.get("now") else datetime.now(timezone.utc)
+    try:
+        now = _parse_time(data["now"]) if data.get("now") else datetime.now(timezone.utc)
+    except ValueError as e:
+        raise InputError(f"now: {e}")
     matches = data.get("matches") or []
-    if not matches:
-        raise InputError("matches is empty")
+    # An empty list is fine: e.g. no match on the coupon has free bookmaker odds. The blend then
+    # falls back to the expert tips and the public split for every match.
     results = [consensus_for_match(m, method, now, max_age) for m in matches]
     return {
         "method": method, "max_age_hours": max_age, "run_at": now.isoformat(),
+        "source": data.get("source"),
         "matches": results,
         "optimizer_matches": [
             {"slot": r["slot"], "label": r["label"], "p": r["p_fair"]}
             for r in results if r["p_fair"] is not None],
-        "excluded": [{"slot": r["slot"], "label": r["label"], "reason": "no usable market"}
+        "excluded": [{"slot": r["slot"], "label": r["label"], "reason": "no usable market",
+                      "dropped": r["dropped"]}
                      for r in results if r["p_fair"] is None],
     }
 
@@ -217,6 +225,9 @@ def to_text(result):
             sp = "n/a" if m["spread_top_outcome"] is None else f"{m['spread_top_outcome']:.1%}"
             lines.append(f"{head}: H {p['H']:.1%}  U {p['U']:.1%}  B {p['B']:.1%}  "
                          f"({m['n_books']} book(s), spread {sp}, confidence {m['confidence']})")
+            for b in m["books"]:
+                lines.append(f"      {b['book']}: margin {b['margin']:.1%}, weight {b['weight_share']:.0%}, "
+                             f"taken {b['fetched_at'] or 'at an unknown time'}")
             for r in m["confidence_reasons"]:
                 lines.append(f"      ! {r}")
         for d in m["dropped"]:

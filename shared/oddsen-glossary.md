@@ -30,7 +30,13 @@ Terms for the pool coupons (Tipping). Verify against the site.
 | **Helgardering** | Full cover: all three outcomes (1X2) in a match. Triples the rows. |
 | **Spiker** | A single mark you are confident in (also "spikre": to lock in). |
 | **Folkets fordeling** | The public split: the share of players tipping each outcome per match. |
-| **Pott / pulje** | The pool of money paid out to winners. (TO VERIFY exact term used on the site.) |
+| **Premie** | The prize per winner in a tier. The prize money is shares of the round's turnover (see `tipping-payout-rules.md`). |
+| **Spillefrist** | The deadline for buying rows in a round. |
+| **Omsetning** | Turnover: the total staked in the round; the prizes are shares of it. |
+| **Premieprognose** | The prize forecast Norsk Tipping shows while a round is running (winners and prize per tier). |
+| **Folket / Ekspert** | The "Tips" options on the coupon: fill in what the public picks most, or what Norsk Tipping's experts pick. The same percentages are shown per match. |
+| **Enkeltrekker / System** | Playing single rows, or a system with several marks in some matches (gardering). |
+| **12 / 11 / 10 rette** | The three prize tiers: that many matches correct. |
 
 ## Notes on Oddsen as a bookmaker
 

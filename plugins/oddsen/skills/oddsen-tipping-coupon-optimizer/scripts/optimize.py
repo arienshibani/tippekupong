@@ -11,6 +11,8 @@ Input JSON:
       "row_price_nok": 1.0,            # required (TO VERIFY against Norsk Tipping)
       "budget_nok": 100,               # required; base tier
       "max_budget_nok": 200,           # optional; adds a "max" tier
+      "bankroll_nok": 2500,            # optional but recommended; with it, no tier is built above
+      "cap_pct": 2,                    #   cap_pct % of the bankroll (default 2) and over-cap budgets are cut
       "risk": "balanced",              # safe | balanced | contrarian
       "matches": [
         {"slot": 1, "label": "Home - Away",
@@ -24,7 +26,9 @@ Method (see shared/tipping-pool-math.md): for each match, the outcomes are ranke
 score = (1 - lam) * p + lam * p * (p / q). A cover of size n marks the top n outcomes.
 P(coupon contains a fully correct row) = prod_i sum(p over marked outcomes in i), and
 rows = prod_i n_i. Maximising P subject to rows <= budget / row_price is solved
-exactly by dynamic programming over the row count. Standard library only.
+exactly by dynamic programming over the row count. Probabilities may be fractions (0.51) or
+percentages adding to about 100 (51/27/22); small rounding errors (98-102 %) are rescaled with a
+note. Standard library only.
 """
 import json
 import math
@@ -34,7 +38,7 @@ OUTCOMES = ("H", "U", "B")
 MARK = {"H": "1", "U": "X", "B": "2"}
 RISK_LAMBDA = {"safe": 0.0, "balanced": 0.5, "contrarian": 1.0}
 Q_FLOOR = 0.02
-SUM_TOL = 0.01
+RESCALE_TOL = 0.02
 
 
 class InputError(ValueError):
@@ -42,19 +46,33 @@ class InputError(ValueError):
 
 
 def _probs(raw, where, floor=0.0):
+    """Validate a H/U/B triple. Returns (fractions summing to 1, note or None).
+
+    Accepts fractions, or percentages adding to about 100; anything that adds to within
+    2 % of the right total is divided by its total, and a note says so.
+    """
     if not isinstance(raw, dict) or any(k not in raw for k in OUTCOMES):
         raise InputError(f"{where}: need H, U and B")
     vals = {k: float(raw[k]) for k in OUTCOMES}
     if any(v < 0 for v in vals.values()):
         raise InputError(f"{where}: negative probability")
     total = sum(vals.values())
-    if abs(total - 1.0) > SUM_TOL:
-        hint = " (use fractions such as 0.51, not percentages)" if total > 50 else ""
-        raise InputError(f"{where}: H+U+B sums to {total:.3f}, expected 1{hint}")
+    note = None
+    if 98 <= total <= 102:
+        note = f"given as percentages adding to {total:g} %"
+        vals = {k: v / 100 for k, v in vals.items()}
+        total /= 100
+    if abs(total - 1.0) > RESCALE_TOL + 1e-9:
+        raise InputError(f"{where}: H+U+B adds to {total:g}; give fractions such as 0.51 or "
+                         "percentages that add to about 100")
+    if abs(total - 1.0) > 1e-4:  # smaller gaps are just decimals rounded upstream
+        note = (note + "; " if note else f"added to {total:.1%}; ") + "divided by the total"
+    else:
+        note = None  # clean percentages (or fractions) need no comment
     if floor:
         vals = {k: max(v, floor) for k, v in vals.items()}
         total = sum(vals.values())
-    return {k: v / total for k, v in vals.items()}
+    return {k: v / total for k, v in vals.items()}, note
 
 
 def parse_input(data):
@@ -72,6 +90,26 @@ def parse_input(data):
         max_budget = float(max_budget)
         if max_budget < budget:
             raise InputError("max_budget_nok must be >= budget_nok")
+    requested, cap_pct, bankroll, capped = budget, None, None, False
+    if data.get("bankroll_nok") is not None:
+        try:
+            bankroll = float(data["bankroll_nok"])
+            cap_pct = float(data.get("cap_pct", 2))
+        except (TypeError, ValueError):
+            raise InputError("bankroll_nok and cap_pct must be numbers")
+        if bankroll <= 0 or cap_pct <= 0:
+            raise InputError("bankroll_nok and cap_pct must be positive")
+        cap_budget = bankroll * cap_pct / 100
+        if cap_budget < price - 1e-9:
+            raise InputError(f"a {cap_pct:g} % cap of {bankroll:g} NOK is {cap_budget:g} NOK, "
+                             f"less than one row ({price:g} NOK)")
+        if budget > cap_budget + 1e-9:
+            warnings.append(f"requested budget {budget:g} NOK is {budget / bankroll:.1%} of the bankroll, above the "
+                            f"{cap_pct:g} % cap; plans are built at the cap ({cap_budget:g} NOK)")
+            budget, capped = cap_budget, True
+        if max_budget is not None and max_budget > cap_budget + 1e-9:
+            warnings.append(f"max budget {max_budget:g} NOK is above the cap; the max tier is built at the cap")
+            max_budget = cap_budget
     risk = data.get("risk", "balanced")
     if risk not in RISK_LAMBDA:
         raise InputError(f"risk must be one of {sorted(RISK_LAMBDA)}")
@@ -79,22 +117,33 @@ def parse_input(data):
     if not raw_matches:
         raise InputError("matches is empty")
 
-    matches = []
+    matches, errors = [], []
     for idx, m in enumerate(raw_matches):
         slot = m.get("slot", idx + 1)
         label = m.get("label", f"Match {slot}")
         where = f"match {slot}"
-        p = _probs(m.get("p"), f"{where} p")
-        q = None
-        if m.get("q") is not None:
-            q = _probs(m["q"], f"{where} q", floor=Q_FLOOR)
-        else:
-            warnings.append(f"{where} ({label}): no public split; value ratio treated as 1")
+        try:
+            p, p_note = _probs(m.get("p"), f"{where} p")
+            q, q_note = None, None
+            if m.get("q") is not None:
+                q, q_note = _probs(m["q"], f"{where} q", floor=Q_FLOOR)
+        except InputError as e:
+            errors.append(str(e))
+            continue
+        for note, what in ((p_note, "p"), (q_note, "public split")):
+            if note:
+                warnings.append(f"{where} ({label}): {what} {note}")
+        if q is None:
+            warnings.append(f"{where} ({label}): no public split; crowding unknown, so this match is chosen on hit chance only")
         if m.get("q_estimated"):
             warnings.append(f"{where} ({label}): public split is an estimate, not observed")
         matches.append({"slot": slot, "label": label, "p": p, "q": q})
+    if errors:
+        raise InputError("; ".join(errors))
     return {
         "row_price": price, "budget": budget, "max_budget": max_budget,
+        "requested_budget": requested, "budget_capped": capped,
+        "bankroll": bankroll, "cap_pct": cap_pct,
         "risk": risk, "lam": RISK_LAMBDA[risk], "matches": matches,
     }, warnings
 
@@ -142,7 +191,7 @@ def solve(matches, lam, max_rows):
     return best_rows, prob, choice
 
 
-def describe(matches, choice, rows, prob, price, tier):
+def describe(matches, choice, rows, prob, price, tier, tier_budget):
     marks = []
     mean_vi = 1.0
     win_vi = 1.0
@@ -162,6 +211,7 @@ def describe(matches, choice, rows, prob, price, tier):
     has_q = any(m["q"] is not None for m in matches)
     return {
         "tier": tier,
+        "tier_budget_nok": round(tier_budget, 2),
         "rows": rows,
         "cost_nok": round(rows * price, 2),
         "p_all_correct": prob,
@@ -190,8 +240,11 @@ def optimize(data):
             warnings.append(f"tier '{tier}' identical to a cheaper tier; omitted")
             continue
         seen.add(key)
-        plans.append(describe(cfg["matches"], choice, rows, prob, price, tier))
-    return {"risk": cfg["risk"], "row_price_nok": price, "plans": plans, "warnings": warnings}
+        plans.append(describe(cfg["matches"], choice, rows, prob, price, tier, cap * price))
+    return {"risk": cfg["risk"], "row_price_nok": price, "budget_nok": cfg["budget"],
+            "requested_budget_nok": cfg["requested_budget"], "budget_capped": cfg["budget_capped"],
+            "bankroll_nok": cfg["bankroll"], "cap_pct": cfg["cap_pct"],
+            "plans": plans, "warnings": warnings}
 
 
 def to_text(result):

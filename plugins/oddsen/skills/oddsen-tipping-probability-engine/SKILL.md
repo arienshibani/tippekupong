@@ -1,6 +1,6 @@
 ---
 name: oddsen-tipping-probability-engine
-description: Turns 1X2 bookmaker odds from several books into fair (margin-free) probabilities per match, with a weighted consensus and a disagreement measure. Use when the user has odds for a kupong or a match and wants true probabilities, de-vigging, margin, or the input for building a Tipping coupon.
+description: Turns 1X2 bookmaker odds from several books into fair (margin-free) probabilities per match, with a weighted consensus and a disagreement measure, and blends them with Norsk Tipping's expert tips and the public split into one probability per Tipping match. Use when the user has odds for a kupong or a match and wants true probabilities, de-vigging, margin, or the input for building a Tipping coupon.
 ---
 
 # Tipping probability engine
@@ -25,6 +25,8 @@ Takes decimal 1X2 (H/U/B: home win / draw / away win) odds from one or more book
 
 Every quote needs a source and a timestamp. If the user pasted odds with no time, ask when they were taken; if unknown, the script keeps the quote but marks it "undated" and lowers confidence.
 
+Times are ISO times **with a zone**: `Z` for UTC or an offset such as `+02:00` for Oslo summer time (`+01:00` in winter). A time without a zone is dropped with a reason, never guessed. The script uses the machine's clock for "now"; the optional top-level `"now"` is only for replaying old data. A quote's age is measured against it.
+
 ## Steps
 
 1. Collect quotes and write the JSON the script expects (see `examples/two-matches.json`). Odds are decimal and must be above 1.00; Norwegian decimal commas ("2,10") are accepted. Do not convert fractional or American odds silently: convert them and say so.
@@ -35,7 +37,7 @@ Every quote needs a source and a timestamp. If the user pasted odds with no time
    python3 scripts/engine.py input.json            # JSON, for further use
    ```
 
-3. Read the result before presenting it. Look for `low` confidence, dropped quotes, and `no_market` matches.
+3. Read the result before presenting it. Look for `low` confidence, dropped quotes, and `no_market` matches. Matches with no usable quote come back in `excluded` together with the reasons their quotes were dropped (for example "stale (8.0 h old)"); pass these on, because the final report shows them.
 4. Present the output format below. State the de-vig method and the run time.
 5. To build a coupon, pass `optimizer_matches` from the JSON to `oddsen-tipping-coupon-optimizer`, adding the public split `q` per match if you have it.
 
@@ -43,14 +45,34 @@ Every quote needs a source and a timestamp. If the user pasted odds with no time
 
 - **Margin per book:** `Σ(1/odds) − 1`.
 - **De-vig each book** with the chosen method. If a method cannot be applied (additive would give a negative probability; a market with no positive margin) it falls back to multiplicative and says so.
-  - Multiplicative spreads the margin evenly. Power and Shin move probability toward the favourite and away from long shots, which matches the favourite-longshot bias seen in practice. Use them when a match has a heavy favourite.
+  - Multiplicative spreads the margin evenly and is the default. Power and Shin move probability toward the favourite and away from long shots, which matches the favourite-longshot bias seen in practice. Use `power` for the whole run if any match has a favourite below odds 1.30 (for example 1.25 gives about 79 % with power against 76 % with multiplicative), and say which method you used.
 - **Drops quotes** that are incomplete, have odds ≤ 1, have an unreadable timestamp, or are older than the max age at run time. Each drop is listed with a reason.
-- **Consensus** is a weighted mean of the de-vigged probabilities. A quote's weight is `weight / max(margin, 1 %)²`, so low-margin (sharper) books count more.
+- **Consensus** is a weighted mean of the de-vigged probabilities. A quote's weight is `weight / max(margin, 1 %)`, so low-margin (sharper) books count more (a 1 % margin counts about five times a 5 % margin).
 - **Spread** is the largest gap between books on the most likely outcome. Confidence is `low` for a single book, a spread above 5 percentage points, or any undated quote.
+
+## Blend with the expert tips and the public split
+
+Most Tipping matches have no free bookmaker odds (Eliteserien, OBOS-ligaen, qualifiers), so the pipeline blends three ingredients into one probability per match:
+
+```bash
+python3 scripts/blend.py --coupon coupon.json --engine engine.json --out blend.json --text
+```
+
+`coupon.json` comes from `oddsen-tipping-fixtures` (it has each match's `public` and `expert` split) and `engine.json` from running `engine.py` on `odds.json` from `oddsen-tipping-market-odds`. If there are no odds at all, pass an engine file with an empty `matches` list (`{"matches": []}`).
+
+| Situation | Weights |
+|---|---|
+| Bookmaker consensus from 2 or more books | market 55 %, expert 25 %, public 20 % |
+| One bookmaker | market 40 %, expert 30 %, public 30 % |
+| No bookmaker odds | expert 50 %, public 50 % |
+
+When the odds are more than 24 hours old the market weight is cut by a quarter first and the weights are then renormalised (so 55 % becomes about 48 %, not 41 %). The blend's `confidence` is `ok` or `low`; the value model turns the number of reasons for doubt into `high`, `medium` or `low`, and the report shows only the reasons, with "(low confidence)" when it is low. These weights are judgement, printed in the output. The evidence behind the ingredients: on 720 finished Tipping matches the expert tips (log-loss 0.9375) and the public split (0.9424) were both well calibrated against 1.0986 for a coin flip, and an even mix scored 0.9353. Bookmaker consensus is the only independent signal, so it counts most when it exists. For matches with no odds there is **little independent edge**: the probability is mostly the crowd's own view. Say so.
+
+The output (`blend.json`) has one entry per match with `p_fair`, `q` (the public split), `confidence` (`ok` only for 2+ books), `confidence_reasons`, `notes`, `weights` and the components. It is already in the shape `oddsen-tipping-value-model` reads.
 
 ## Output format
 
-State: method, run time, and the number of quotes used and dropped.
+State: method, run time, and the number of quotes used and dropped. The `--text` output already prints one line per match (H/U/B, number of books, spread, confidence) and, under it, each book's margin, weight and the time its odds were taken. Present it as a table if the user wants one:
 
 | # | Match | H | U | B | Books | Spread | Confidence | Sources and time |
 |---|---|---|---|---|---|---|---|---|

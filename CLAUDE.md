@@ -10,7 +10,9 @@ A Claude Code plugin marketplace with one plugin, `oddsen`, containing skills th
 
 - **One skill per folder:** `plugins/oddsen/skills/<skill-name>/SKILL.md`.
 - **Naming:** kebab-case, prefixed `oddsen-` (e.g. `oddsen-value-check`). The folder name must equal the `name` in frontmatter.
-- **Tipping skills:** skills for Norsk Tipping's pool games (tippekupong, gardering) use the prefix `oddsen-tipping-` (e.g. `oddsen-tipping-coupon`). Design in `docs/COUPON-ARCHITECTURE.md`; pool math in `shared/tipping-pool-math.md` (Kelly does not apply there; the budget is rows × row price).
+- **Tipping skills:** skills for Norsk Tipping's pool games (tippekupong, gardering) use the prefix `oddsen-tipping-` (e.g. `oddsen-tipping-coupon`). Design in `docs/COUPON-ARCHITECTURE.md`; payout rules and their evidence in `shared/tipping-payout-rules.md`; pool math in `shared/tipping-pool-math.md` (Kelly does not apply there; the budget is rows × row price).
+- **Network use:** the Tipping skills read two public sources, once per run: Norsk Tipping's public site data feed and a football-data.co.uk CSV. No login, no keys, no cookies, no posting. A test (`tests/test_fetchers.py`) fails if the fetch script starts handling credentials. Read other sites only with the same restraint, and say where data came from.
+- **Tests:** `python3 -m unittest discover -s tests` must pass. Fresh-Claude test runs (a subagent that only sees the unzipped skills) are saved in `docs/test-runs/`; do one after changing a SKILL.md or the pipeline contract.
 - **Frontmatter:** only `name` and `description` are required. The description says *when* to use the skill in one or two sentences (max 1024 chars) and includes trigger words a user would actually type ("value bet", "Oddsen", "odds", "spill").
 - **Keep SKILL.md lean** (< ~300 lines). Put long material in `references/` inside the skill folder and link to it. Put executable helpers in `scripts/` inside the skill folder.
 - **Shared references** live in `/shared`. Reference them from a skill as `references/<file>.md`; the packaging script copies them in. Don't duplicate their content inside a skill.

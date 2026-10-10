@@ -26,22 +26,31 @@ Sits between the probability engine and the coupon optimizer. It takes each matc
 
 1. Collect `p_fair` and `q` for every match. Carry over the engine's `confidence` and `spread_top_outcome`.
 2. Gather team news only from sources you can cite. For each piece, decide whether to propose an adjustment. Use this test:
-   - **Is it new to the market?** Odds already reflect widely known news (an injury announced days ago, a long-term suspension). Adjusting for it again double counts, so set `market_likely_priced_in: true` or leave it out. Late lineup news, rotation signals and local conditions are the cases where an adjustment can make sense.
+   - **Is it new to the market?** Odds already reflect widely known news, so adjusting for it again double counts. Give each piece of news its `source_time` (an ISO time with a zone, when it was announced) and keep the engine's `books` (with the times the odds were taken) on the match; the script then decides:
+     - announced **at least 15 minutes before the earliest odds**: priced in, not applied;
+     - announced **after the latest odds**: new to the market, applied (and noted as "only N min old" if it is under 30 minutes before the run, since the market may not have fully moved);
+     - **anywhere in between**: too close to tell, not applied, and flagged.
+     - **no odds on this match** (most Eliteserien and OBOS-ligaen matches): there is nothing to compare the news time with, so it is applied, but if the public split was read **after** the news the script flags that the split may already reflect it (the adjustment may double count). Say so to the user.
+     Set `market_likely_priced_in` yourself only to override this (true = never apply; false = apply regardless), and say why. Without times the script does not guess: then use your judgement, ask the user, and say what you assumed.
    - **Is it confirmed?** An official announcement is `confirmed`. A rumour, a "doubtful" tag or a journalist's guess is `unconfirmed`: the script records it as a risk flag and does **not** change any number.
-   - **How big?** Small. As a guide: a key starter out, 2 to 3 pp; a rotated-heavily side, 2 to 4 pp; weather, 0 to 1 pp. Shift probability between the affected side and the opposing outcome(s) so the change is balanced. Every adjustment needs a reason, a source and a time.
-3. Build the JSON (see `examples/three-matches.json`) and run:
+   - **How big?** Small. As a guide: a key starter out, 2 to 3 pp; a rotated-heavily side, 2 to 4 pp; weather, 0 to 1 pp. Shift probability between the affected side and the opposing outcome(s) so the change is balanced: give both sides as separate adjustments (affected outcome down, opposing outcome up). If the opposing side has two outcomes (draw and away), put the whole shift on the more affected one or split it in proportion to their probabilities. One news item split over several outcomes counts as one item for confidence, and the report merges a mirrored pair into one line. Every applied adjustment needs a size (`delta_pp`), a reason, a source and a time. Unconfirmed or priced-in items need no size: do not invent one for news you do not intend to apply.
+3. Run the script on the blend output. Put the news in a small file keyed by slot number (see `examples/three-matches.json` for the adjustment fields):
 
    ```bash
-   python3 scripts/adjust.py input.json --text     # readable
-   python3 scripts/adjust.py input.json            # JSON, for further use
+   python3 scripts/adjust.py blend.json --news news.json > value.json     # JSON for the next stage
+   python3 scripts/adjust.py blend.json --news news.json --text            # readable
    ```
+
+   `news.json` looks like `{"4": [{"outcome": "H", "delta_pp": -3, "reason": "...", "source": "...", "source_time": "2026-10-10T18:30:00+02:00"}, {"outcome": "B", "delta_pp": 3, ...}]}`. Without news, run it without `--news`. `blend.json` already carries `p_fair`, `q`, `confidence`, `confidence_reasons` and `notes`, which are passed through (low confidence from a missing bookmaker price is reported with its own reason). The older input shape (engine matches plus `q` and `adjustments` written by hand) still works.
 
 4. Read the result. Report what was applied, what was not applied and why, any capped adjustments, and the confidence level per match.
 5. To build a coupon, pass `optimizer_matches` from the JSON (which includes `p`, `q` and `q_estimated`) to `oddsen-tipping-coupon-optimizer`.
 
 ### What the script does
 
-- Applies only adjustments that have an outcome, a number, a reason and a source, are `confirmed`, and are not marked as already priced in. Everything else is listed under `rejected` with the reason.
+- Applies only adjustments that have an outcome, a number, a reason and a source, are `confirmed`, and are not marked as already priced in. Everything else is listed under `rejected` with the reason, and the final report shows the priced-in and incomplete ones; unconfirmed items become a single risk flag per match.
+- Flags an adjustment smaller than 0.5 pp as a probable unit mistake (`delta_pp` is percentage points: 3 means 3 pp, not 0.03).
+- Carries the dropped-quote reasons of a match with no market through to `excluded`, so the report can say why it was left out.
 - Enforces caps: at most 5 pp net per outcome and 8 pp in total (sum of absolute changes) per match. Larger requests are scaled down and flagged; they apply in full only if the user explicitly approves that match (`user_approved: true`).
 - Computes `p_est = normalise(p_fair + deltas)`, flooring each outcome at 1 %. Because the result is renormalised, an unbalanced adjustment also moves the other outcomes a little. `change_pp` shows the actual net change.
 - Computes `value_ratio = p_est / q`, flooring `q` at 2 % so a tiny public share cannot blow up a ratio. A ratio above 1 means under-backed relative to its probability, below 1 means over-backed.

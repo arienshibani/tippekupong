@@ -11,8 +11,8 @@
     {
       "name": "oddsen",
       "source": "./plugins/oddsen",
-      "description": "Odds math, value checks, fixture scouting, staking and bet tracking for Oddsen.",
-      "version": "0.5.1"
+      "description": "Builds Norsk Tipping Tipping coupons from live data: fetches the round, estimates the matches, picks marks and covers for the best expected payout, and explains the result.",
+      "version": "0.7.0"
     }
   ]
 }

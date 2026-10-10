@@ -65,6 +65,19 @@ class Guards(unittest.TestCase):
         self.assertTrue(any(f.startswith("unconfirmed") for f in r["risk_flags"]))
         self.assertIn("unconfirmed team news", r["confidence_reasons"])
 
+    def test_several_unconfirmed_items_become_one_flag(self):
+        r = one([adjustment("H", -3, status="unconfirmed", reason="may rotate"),
+                 adjustment("B", 3, status="unconfirmed", reason="may rotate")])
+        flags = [f for f in r["risk_flags"] if "unconfirmed" in f]
+        self.assertEqual(len(flags), 1)
+        self.assertIn("H -3 pp, B +3 pp", flags[0])
+        self.assertEqual(flags[0].count("may rotate"), 1)
+
+    def test_no_market_match_keeps_dropped_quote_reasons(self):
+        dropped = [{"book": "soft", "reason": "stale (8.0 h old)"}]
+        result = adj.run({"matches": [{"slot": 5, "label": "x", "p_fair": None, "dropped": dropped}]})
+        self.assertEqual(result["excluded"][0]["dropped"], dropped)
+
     def test_priced_in_news_is_not_applied(self):
         r = one([adjustment("H", -4, market_likely_priced_in=True)])
         self.assertAlmostEqual(r["p_est"]["H"], P["H"], places=6)
@@ -111,19 +124,139 @@ class Guards(unittest.TestCase):
         self.assertTrue(any("check the unit" in f for f in r["risk_flags"]))
         self.assertEqual(one([adjustment("H", -3)])["risk_flags"], [])
 
-    def test_percentages_instead_of_fractions_get_a_hint(self):
-        with self.assertRaises(adj.InputError) as ctx:
-            adj.run({"matches": [{"slot": 1, "p_fair": {"H": 51, "U": 27, "B": 22}}]})
-        self.assertIn("fractions", str(ctx.exception))
+    def test_percentages_and_rounding_are_accepted_with_a_note(self):
+        r = adj.run({"matches": [{"slot": 1, "p_fair": {"H": 50, "U": 30, "B": 20},
+                                  "q": {"H": 49, "U": 27, "B": 25}}]})["matches"][0]
+        self.assertAlmostEqual(r["p_est"]["H"], 0.5, places=6)
+        self.assertAlmostEqual(sum(r["q"].values()), 1.0, places=5)
+        self.assertIn("given as percentages adding to 101 %", r["split_note"])
+        self.assertTrue(any("public split" in n for n in r["notes"]))
+        clean = adj.run({"matches": [{"slot": 1, "p_fair": {"H": 50, "U": 30, "B": 20},
+                                      "q": {"H": 49, "U": 27, "B": 24}}]})["matches"][0]
+        self.assertIsNone(clean["split_note"])  # exactly 100 %: nothing to say
+        self.assertEqual(clean["notes"], [])
 
-    def test_many_adjustments_lower_confidence(self):
-        r = one([adjustment("H", -1), adjustment("U", 1), adjustment("B", 0.5)])
-        self.assertIn("3 adjustments applied", r["confidence_reasons"])
+    def test_nonsense_totals_are_rejected_and_every_failing_match_is_listed(self):
+        bad = {"H": .5, "U": .3, "B": .3}
+        with self.assertRaises(adj.InputError) as ctx:
+            adj.run({"matches": [{"slot": 1, "p_fair": bad}, {"slot": 2, "p_fair": P}, {"slot": 3, "p_fair": bad}]})
+        self.assertIn("match 1", str(ctx.exception))
+        self.assertIn("match 3", str(ctx.exception))
+
+    def test_confidence_counts_news_items_not_adjustment_legs(self):
+        mirrored = one([adjustment("H", -2, source="club"), adjustment("U", 1, source="club"),
+                        adjustment("B", 1, source="club")])
+        self.assertEqual(mirrored["confidence_reasons"], [])  # one news item split three ways
+        many = one([adjustment("H", -1, source="a"), adjustment("U", 1, source="b"), adjustment("B", 0.5, source="c")])
+        self.assertIn("3 news items applied", many["confidence_reasons"])
 
     def test_engine_low_confidence_and_estimated_split_stack(self):
         r = one(confidence="low", q_estimated=True)
         self.assertEqual(r["confidence"], "low")
         self.assertEqual(len(r["confidence_reasons"]), 2)
+
+
+class Timing(unittest.TestCase):
+    """News is judged against the times the odds were taken (books[].fetched_at)."""
+    BOOKS = [{"book": "sharp", "fetched_at": "2026-10-10T11:30:00Z"},
+             {"book": "soft", "fetched_at": "2026-10-10T11:10:00Z"}]
+    NOW = "2026-10-10T12:00:00Z"
+
+    def news(self, source_time, **kw):
+        m = {"slot": 1, "label": "m", "p_fair": P, "q": Q, "books": self.BOOKS,
+             "adjustments": [adjustment("H", -3, source_time=source_time, **kw), adjustment("B", 3, source_time=source_time, **kw)]}
+        return adj.run({"now": self.NOW, "matches": [m]})["matches"][0]
+
+    def test_news_well_before_the_odds_is_priced_in(self):
+        r = self.news("2026-10-10T10:15:00+00:00")  # 55 min before the earliest odds
+        self.assertEqual(r["applied"], [])
+        self.assertIn("announced 55 min before the earliest odds", r["rejected"][0]["why"])
+        self.assertAlmostEqual(r["p_est"]["H"], P["H"], places=6)
+
+    def test_news_after_the_latest_odds_is_applied(self):
+        r = self.news("2026-10-10T11:40:00Z")
+        self.assertEqual(len(r["applied"]), 2)
+        self.assertAlmostEqual(r["p_est"]["H"], 0.47, places=6)
+
+    def test_news_close_to_the_odds_times_is_flagged_not_applied(self):
+        r = self.news("2026-10-10T11:00:00Z")  # 10 min before the earliest odds: too close to call
+        self.assertEqual(r["applied"], [])
+        self.assertIn("too close", r["rejected"][0]["why"])
+        self.assertTrue(any("could not tell if it was priced in" in f for f in r["risk_flags"]))
+        between = self.news("2026-10-10T11:20:00Z")  # between the two quotes
+        self.assertEqual(between["applied"], [])
+
+    def test_gap_is_exactly_fifteen_minutes(self):
+        self.assertEqual(self.news("2026-10-10T10:55:00Z")["applied"], [])           # 15 min: priced in
+        self.assertIn("priced this in", self.news("2026-10-10T10:55:00Z")["rejected"][0]["why"])
+        self.assertIn("too close", self.news("2026-10-10T10:56:00Z")["rejected"][0]["why"])  # 14 min
+
+    def test_explicit_flag_beats_the_automatic_rule(self):
+        r = self.news("2026-10-10T11:40:00Z", market_likely_priced_in=True)
+        self.assertEqual(r["applied"], [])
+        r = self.news("2026-10-10T10:15:00Z", market_likely_priced_in=False)
+        self.assertEqual(len(r["applied"]), 2)
+
+    def test_without_times_or_books_the_script_does_not_guess(self):
+        m = {"slot": 1, "label": "m", "p_fair": P, "adjustments": [adjustment("H", -3), adjustment("B", 3)]}
+        self.assertEqual(len(adj.run({"now": self.NOW, "matches": [m]})["matches"][0]["applied"]), 2)
+        zoneless = self.news("2026-10-10T10:15:00")  # no zone: ignored for timing, applied
+        self.assertEqual(len(zoneless["applied"]), 2)
+
+    def test_fresh_news_gets_a_note(self):
+        r = self.news("2026-10-10T11:45:00Z")  # 15 min before "now"
+        self.assertEqual(sum("only 15 min old" in n for n in r["notes"]), 1)  # one note for the news item, not per leg
+        self.assertTrue(any(n.startswith("news applied: H -3 pp, B +3 pp") for n in r["notes"]))
+        older = adj.run({"now": "2026-10-10T14:00:00Z", "matches": [{"slot": 1, "label": "m", "p_fair": P, "books": self.BOOKS,
+                         "adjustments": [adjustment("H", -3, source_time="2026-10-10T11:45:00Z")]}]})["matches"][0]
+        self.assertFalse(any("min old" in n for n in older["notes"]))
+
+    def test_unconfirmed_and_priced_in_items_need_no_size(self):
+        r = one([{"outcome": "H", "reason": "may rotate", "source": "tweet", "status": "unconfirmed"},
+                 {"outcome": "B", "reason": "old news", "source": "club", "market_likely_priced_in": True}])
+        self.assertEqual(r["applied"], [])
+        self.assertTrue(any("unconfirmed team news, not applied: H (may rotate)" in f for f in r["risk_flags"]))
+        self.assertEqual(len(r["rejected"]), 2)
+
+    def test_a_confirmed_news_item_still_needs_a_size(self):
+        r = one([{"outcome": "H", "reason": "r", "source": "s"}])
+        self.assertIn("delta_pp missing", r["rejected"][0]["why"])
+
+    def test_bad_now_is_an_input_error(self):
+        with self.assertRaises(adj.InputError):
+            adj.run({"now": "2026-10-10T12:00:00", "matches": [{"slot": 1, "p_fair": P}]})
+
+
+class NewsOnMatchesWithoutOdds(unittest.TestCase):
+    """No bookmaker odds to compare with: the only market-like data is the public split, read at a known time."""
+
+    def run_news(self, news_time, read_at="2026-10-10T16:42:00Z", books=None):
+        m = {"slot": 1, "label": "m", "p_fair": P, "q": Q, "public_read_at": read_at,
+             "adjustments": [adjustment("H", -3, source_time=news_time), adjustment("B", 3, source_time=news_time)]}
+        if books:
+            m["books"] = books
+        return adj.run({"now": "2026-10-10T17:00:00Z", "matches": [m]})["matches"][0]
+
+    def test_news_before_the_split_was_read_is_flagged_but_still_applied(self):
+        r = self.run_news("2026-10-10T15:45:00Z")
+        self.assertEqual(len(r["applied"]), 2)
+        flags = [f for f in r["risk_flags"] if "may already reflect the news" in f]
+        self.assertEqual(len(flags), 1)  # one flag for the news item, not one per leg
+        self.assertIn("57 min before the public split was read", flags[0])
+
+    def test_news_after_the_split_was_read_is_not_flagged(self):
+        r = self.run_news("2026-10-10T16:50:00Z")
+        self.assertEqual([f for f in r["risk_flags"] if "public split" in f], [])
+
+    def test_with_bookmaker_odds_the_odds_times_decide_instead(self):
+        books = [{"book": "x", "fetched_at": "2026-10-10T16:30:00Z"}]
+        r = self.run_news("2026-10-10T15:45:00Z", books=books)  # 45 min before the odds: priced in
+        self.assertEqual(r["applied"], [])
+        self.assertEqual([f for f in r["risk_flags"] if "public split" in f], [])
+
+    def test_no_read_time_no_flag(self):
+        r = self.run_news("2026-10-10T15:45:00Z", read_at=None)
+        self.assertEqual([f for f in r["risk_flags"] if "public split" in f], [])
 
 
 class ExampleAndHandoff(unittest.TestCase):

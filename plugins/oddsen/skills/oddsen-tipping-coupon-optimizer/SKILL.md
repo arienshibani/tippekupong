@@ -1,87 +1,78 @@
 ---
 name: oddsen-tipping-coupon-optimizer
-description: Chooses single marks and half/full covers (halvgardering, helgardering) for a Norsk Tipping Tipping pool coupon (tippekupong, 1X2) within a budget, given each match's estimated probabilities and the public split. Use when the user asks to build, garder or optimise a kupong, or asks where to spend extra rows.
+description: Builds the marks and half/full covers (halvgardering, helgardering) for a Norsk Tipping Tipping kupong within a budget, choosing the combination with the best expected payout across the 12, 11 and 10-correct prizes while keeping a good chance of winning something. Use when the user asks to build, garder or optimise a kupong, or where to spend extra rows.
 ---
 
 # Tipping coupon optimizer
 
-Given estimated probabilities (and, ideally, the public split) for each match on a Tipping coupon, this skill picks the marks that give the best chance of a fully correct row for a fixed budget, and shows how crowded the chosen rows are likely to be. It is pool maths, not fixed-odds maths: the price per row is fixed, so there is no Kelly staking here, and the edge (if any) comes from outcomes the public under-backs.
+Given an estimated probability and the public split for every match, this skill picks the marks for each match so that the coupon has the best **expected payout** for a fixed number of rows, while keeping a good chance of winning something. It uses the real payout rules: prizes are paid for 12, 11 **and 10** correct, shared with every other tipper who has the same tier, and the 10-correct tier is cancelled when too many tippers share it (`references/tipping-payout-rules.md`). So it avoids result combinations that many others cover, which is where following the crowd loses money.
 
 ## Before you start
 
 - Read `references/responsible-gambling.md` and follow it.
-- Read `references/tipping-pool-math.md` for the formulas and a worked example. Don't re-derive them here.
-- Read `references/odds-math.md` if you need to turn bookmaker odds into probabilities (de-vig) first.
-- Pool rules are **TO VERIFY** on Norsk Tipping's site (matches per coupon, row price, payout tiers). Ask the user for the row price if you cannot read it from a source you can cite; never assume it.
+- Read `references/tipping-payout-rules.md` for the prize rules and the evidence. Don't re-derive them.
+- Probabilities come from `oddsen-tipping-probability-engine` (`blend.py`), then `oddsen-tipping-value-model` (`value.json`).
 
 ## Inputs
 
 | Input | Required | Default |
 |---|---|---|
-| Matches with estimated `p` for H/U/B (sums to 1) and a source and timestamp | yes | none, so ask or compute from odds |
-| Public split `q` per match (H/U/B), with source and timestamp | no | none; value ratios are then neutral and a warning is shown |
-| Row price (NOK) | yes | none, so ask |
-| Budget (NOK) for the coupon | yes | none, so ask |
-| Bankroll (NOK) | yes, to show cost as a share | none, so ask |
-| Risk: `safe`, `balanced`, `contrarian` | no | `balanced` |
-| Optional higher budget for a "max" tier | no | none |
-
-If the user only has bookmaker odds, de-vig them first (say which method) and use the result as `p`. If the user pastes a public split, use it as `q` and say it is observed. If you had to estimate `q` from odds, mark `q_estimated: true`.
+| `value.json` from `oddsen-tipping-value-model` (per match: `p` and the public split `q`) | yes | none |
+| `coupon.json` from `oddsen-tipping-fixtures` (row price and the estimated final turnover) | yes | none |
+| Budget in NOK (`--budget`): what the user asked for | yes | none, so ask |
+| Bankroll in NOK (`--bankroll`) | yes: it enforces the cap | none, so ask |
+| `--cap-pct` | only if the user set their own cap, calmly | 2 (% of the bankroll) |
+| `--max-budget` (adds a "max" tier) | only if the user asks | none |
+| `--goal balanced` or `prize-chance` | no | `balanced` |
 
 ## Steps
 
-1. Collect the inputs above. Keep a source and timestamp for every probability and for `q`. If anything is older than a few hours before the deadline, say so.
-2. Build the JSON the script expects (see `examples/three-match.json`). Probabilities must sum to 1 (±0.01). Do not invent numbers: a match without a usable `p` is left out and reported.
-3. Run the script:
+1. Run the script from this skill's folder with the earlier stages' files:
 
    ```bash
-   python3 scripts/optimize.py input.json --text     # readable
-   python3 scripts/optimize.py input.json            # JSON, for further use
+   python3 scripts/build.py --value value.json --coupon coupon.json --budget 50 --bankroll 3000 --out build.json --text
    ```
 
-   It prints one plan per budget tier (`cheap` ≈ half the budget, `base`, and `max` if a higher budget was given). Tiers that would be identical are merged.
-4. Check the cost of each plan as a share of the bankroll. If the `base` plan is above 2 % of the bankroll (the default cap in `responsible-gambling.md`), say so and recommend the cheaper tier unless the user has set their own cap.
-5. Present the result using the output format below, then the caveats.
+   It takes a few seconds (pure Python, no numpy). It builds a "cheap" tier (half the budget) and a "base" tier, and a "max" tier if asked.
+2. Read `--text`, then pass `build.json` to `oddsen-tipping-coupon-output`.
+3. If the budget was above the cap, the script cuts every tier to the cap and says so (`budget_capped`, `requested_budget_nok`). Tell the user what they asked for, what the cap is in NOK and as a % of the bankroll, and that the plan respects it. A cap raised in the same message as a loss does not count as the user's own cap.
 
 ### What the script does
 
-- Ranks outcomes in each match by `score = (1 − λ)·p + λ·p·(p/q)` with λ = 0 / 0.5 / 1 for safe / balanced / contrarian. A cover of size n marks the top n.
-- Finds the cover sizes (1, 2 or 3 per match) that maximise `P = Π (Σ p over marked outcomes)` subject to rows ≤ budget ÷ row price. The search is exact, not greedy.
-- Reports, per plan: rows, cost, `P(a fully correct row)` and "about 1 in N", and two crowding measures:
-  - `mean_row_value_index`: the average of `Π(p/q)` over your rows. Above 1 means your rows are less crowded than their probability suggests.
-  - `win_value_index`: the same, weighted toward the rows that are most likely to hit.
-- Floors `q` at 2 % per outcome so a tiny public share cannot blow up a ratio.
+- **Payout model.** For every possible result it computes how many other rows share each tier (from the public split, treating tippers as independent per match), the pots (55 % of turnover; 27 % / 27 % / 31 % to the 12 / 11 / 10 tiers), the rounding down to 5 kr and the 10 kr minimum. Tier 12 is summed exactly over your own rows; tiers 11 and 10 by Monte Carlo (5 000 samples to search, 100 000 independent samples for the numbers it reports).
+- **Strategies.** For each tier it finds two systems and reports both:
+  - **balanced** (the default): the highest expected payout among systems that keep at least 80 % of the best prize chance. In practice: among nearly equally likely choices, prefer the outcomes fewer other tippers pick.
+  - **prize-chance**: the best chance of winning something, weighting the tiers by typical prize sizes. Ignores the crowd.
+- **Comparison.** Every plan is shown next to "follow the public" (what the Folket button does) and the coupon with the best chance of all 12 correct, at the same budget and with the same samples.
+- **Search.** A greedy fill and then local moves (single-match, and two-match moves for the exact objective). It always respects the row limit.
+- **No pure payout-chasing.** A strategy that maximises expected payout alone drifts to long shots (about a 0.4 % chance of any prize) and its payout cannot be estimated reliably; on fresh samples it scored below the balanced plan. It is deliberately not offered.
 
-## Output format
+## Output
 
-Start with the assumptions, then one table per tier, then the caveats.
+`build.json`: for each tier a plan with `strategy`, `rows`, `cost_nok`, `marks` (per match: `mark` such as `1`, `X2`, `1X2`; `cover`; `p`; `q`; `value_ratio`), `p_any_prize`, `p_all_correct` and `one_in`, `p_11_or_more_correct`, `p_10_or_more_correct`, `expected_payout_nok`, `expected_payout_per_nok`, `expected_payout_se_nok`, `baselines` and `alternatives`. The report skill turns this into the text for the user.
 
-**Assumptions:** probabilities from `<source, method>` at `<time>`; public split `<observed | estimated>` from `<source>` at `<time>`; row price `<x> NOK`; risk `<mode>`.
+How to talk about the numbers:
+- **Chance of a prize** is what the user feels: typically 10 to 15 % at 24 to 48 rows on a mixed coupon.
+- **Expected payout per NOK** is around 0.45 to 0.5, and an average ticket is worth about 0.47 before the bonus pool. The edge is a few øre per krone. Say that plainly and do not call it a profit.
+- The standard error is printed; only differences larger than about 0.02 per NOK are meaningful.
 
-| # | Match | Mark | Cover | p covered | p (H/U/B) | Public (H/U/B) | Value ratio (H/U/B) |
-|---|---|---|---|---|---|---|---|
+## The older exact solver
 
-Then, for each tier:
-
-- Rows, cost in NOK **and as % of bankroll**, `P(fully correct row)` and "about 1 in N".
-- Crowding: `mean_row_value_index` and `win_value_index`, with a one-line reading.
-- A copyable grid, one mark per line (`1`, `X`, `2`, `1X`, `X2`, `12`, `1X2`).
-
-Close with: "Estimated, not certain. A pool coupon has a takeout, so on average it loses money; even a well-built coupon is unlikely to hit."
+`scripts/optimize.py` (input `examples/three-match.json`) maximises the chance of a fully correct row (12 correct) exactly, by dynamic programming. It ignores the 11 and 10 prizes and the crowd, so use `build.py` unless the user specifically asks for the chance of all 12.
 
 ## Edge cases
 
-- **Budget below one row:** the script errors; tell the user, don't round up.
-- **No public split:** value ratios default to 1, so the plan optimises only for hit probability. Say that the crowding numbers are missing.
-- **Public split estimated:** keep the "estimated" label next to every crowding number.
-- **Very flat match (all outcomes ≈ 1/3):** the cover goes there first; say it is a coin-flip match rather than implying insight.
-- **Match with no usable probability:** exclude it and say so; don't fill a guess.
-- **Independence:** the crowding numbers assume tippers pick matches independently. Real tippers correlate (they pile onto the same favourites), so popular rows are probably more crowded than shown.
-- **Budget above the 2 % cap, or the user asks to raise the budget after a loss:** don't help escalate. Restate the cap and offer the cheaper tier (see `responsible-gambling.md`).
+- **Budget below one row, or a cap below one row:** the script errors; tell the user, don't round up.
+- **No public split for a match:** the script assumes the crowd picks in line with the true probabilities for that match and warns. Say crowding is unknown there.
+- **Estimated public split:** keep the "estimated" label.
+- **Turnover unknown:** the script assumes 2.5 M NOK and warns; expected payout per NOK barely depends on it.
+- **A flat match (all outcomes about 1/3):** it is covered first; say it is a coin flip rather than implying insight.
+- **The user asks for a bigger budget after a loss, or says their cap is now higher right after one:** do not build a bigger coupon (`responsible-gambling.md`).
 - **Output is a recommendation:** the user fills in the coupon themselves. Never log in or place anything.
 
 ## References
 
+- `references/tipping-payout-rules.md`
 - `references/tipping-pool-math.md`
 - `references/odds-math.md`
 - `references/oddsen-glossary.md`

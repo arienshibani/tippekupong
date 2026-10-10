@@ -1,7 +1,7 @@
 {
   "name": "oddsen",
-  "version": "0.5.1",
-  "description": "Skills that help you find and track value bets on Oddsen (Norsk Tipping).",
+  "version": "0.7.0",
+  "description": "Skills for Norsk Tipping: build a Tipping coupon from live data (marks and covers for the best expected payout), plus planned Oddsen value-bet tools.",
   "author": {
     "name": "Ari Enshibani"
   },
