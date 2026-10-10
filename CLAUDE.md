@@ -33,3 +33,23 @@ A Claude Code plugin marketplace with one plugin, `tippekupong`, containing skil
 3. Write it, then run `python3 scripts/validate_skills.py`.
 4. Build with `./scripts/package-skills.sh` and test the zip in Claude.ai, and the plugin in Claude Code.
 5. Bump `version` in `plugins/tippekupong/.claude-plugin/plugin.json` and update the roadmap.
+
+## Releases
+
+A GitHub release is created automatically when a version without a tag lands on `main` (`.github/workflows/release.yml`; it runs the checks and tests, builds the zips, tags `vX.Y.Z` and attaches `tippekupong-plugin.zip` plus one zip per skill).
+
+To release:
+
+1. Write what changed under `## Unreleased` in `CHANGELOG.md`. Write for users: what they can now do or what was fixed.
+2. `python3 scripts/release.py bump patch` (or `minor` / `major`). It dates the section and updates `plugin.json` and `marketplace.json` together.
+3. Commit and push to `main`. The workflow publishes the release; the changelog section is the release notes.
+
+Bump `minor` for a new skill or behaviour users will notice, `patch` for fixes. Never change the plugin `name`: installs are recorded under it.
+
+## Commits in this repo
+
+Claude may be credited as co-author here (this repo only). End commit messages made with Claude's help with:
+
+```
+Co-Authored-By: Claude <noreply@anthropic.com>
+```

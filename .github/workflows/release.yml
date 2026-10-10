@@ -1,0 +1,79 @@
+name: release
+
+# When a version that has no tag yet lands on main, test, build and publish a GitHub release.
+# To release: write the CHANGELOG entries, run `python3 scripts/release.py bump patch`, commit, push.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Work out the version
+        id: version
+        run: |
+          VERSION=$(python3 scripts/release.py version)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null || gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "v$VERSION is already released; nothing to do."
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check
+        if: steps.version.outputs.released == 'false'
+        run: |
+          python3 scripts/release.py check
+          python3 scripts/validate_skills.py
+          python3 scripts/sync_references.py --check
+          python3 -m unittest discover -s tests
+
+      - name: Build
+        if: steps.version.outputs.released == 'false'
+        run: |
+          ./scripts/package-skills.sh
+          (cd plugins/tippekupong && zip -qr "$GITHUB_WORKSPACE/dist/tippekupong-plugin.zip" . -x '*.DS_Store')
+          ls -la dist
+
+      - name: Create the release
+        if: steps.version.outputs.released == 'false'
+        run: |
+          V="v${{ steps.version.outputs.version }}"
+          python3 scripts/release.py notes "${{ steps.version.outputs.version }}" > notes.md
+          cat >> notes.md <<'EOF'
+
+          ---
+
+          **Install in Claude Code**
+
+          ```bash
+          claude plugin marketplace add arienshibani/tippekupong
+          claude plugin install tippekupong@tippekupong
+          ```
+
+          Or with the skills CLI: `npx skills add arienshibani/tippekupong`.
+
+          **Assets:** `tippekupong-plugin.zip` is the whole plugin; the other zips are single skills for upload to Claude.ai (upload all seven).
+          EOF
+          gh release create "$V" dist/*.zip --target "$GITHUB_SHA" --title "$V" --notes-file notes.md
