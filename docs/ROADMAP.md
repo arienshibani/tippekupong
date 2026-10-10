@@ -61,7 +61,7 @@ Design: [`COUPON-ARCHITECTURE.md`](COUPON-ARCHITECTURE.md). Pool math: `shared/t
 | `oddsen-tipping-coupon-output` | Final recommendation: marks, confidence, reasoning, risks, cost in NOK and % of bankroll. |
 | `oddsen-tipping-coupon` | Orchestrator that runs the above; asks only for budget and bankroll. |
 
-Suggested build order: pool math + optimizer first (pure maths, testable offline), then fixtures with the pasted fallback, then odds and the probability engine, then public split and context.
+Suggested build order: pool math + optimizer first (pure maths, testable offline), then the probability engine (offline, takes pasted odds), then fixtures with the pasted fallback, then the fetchers for odds and public split, then context.
 
 ## Decisions to make before Phase 2
 
@@ -83,5 +83,6 @@ Suggested build order: pool math + optimizer first (pure maths, testable offline
 
 | Skill | Status |
 |---|---|
+| `oddsen-tipping-probability-engine` | Built, tested; needs testing in Claude.ai and Claude Code |
 | `oddsen-tipping-coupon-optimizer` (pool math in `shared/tipping-pool-math.md`) | Built, tested; needs testing in Claude.ai and Claude Code |
 | Everything else | Not started |

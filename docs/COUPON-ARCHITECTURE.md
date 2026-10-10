@@ -56,7 +56,7 @@ Every object that holds fetched data carries a `Source`. Team names are normalis
 - **Logic:**
   1. Fetch each source politely: low rate, cache for the session, honour robots.txt and terms.
   2. Match fixtures across sources by normalised names plus kick-off within ±3 h.
-  3. Drop any quote that is not a complete H/U/B triple or whose timestamp is more than 6 h before the deadline (configurable), and say what was dropped.
+  3. Drop any quote that is not a complete H/U/B triple or whose timestamp is more than 6 h old at run time (configurable; implemented in the probability engine), and say what was dropped.
   4. Never fill gaps by guessing. A match with no usable odds is flagged `no_market` and handled in stage 5.
 
 ## Stage 3: `tipping-public-split`

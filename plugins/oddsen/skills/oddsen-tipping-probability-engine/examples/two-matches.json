@@ -1,0 +1,18 @@
+{
+  "method": "multiplicative",
+  "max_age_hours": 6,
+  "now": "2026-10-10T12:00:00Z",
+  "matches": [
+    {"slot": 1, "label": "Illustrative A - B",
+     "quotes": [
+       {"book": "Sharp book (illustrative)", "odds": {"H": 1.90, "U": 3.60, "B": 4.40}, "fetched_at": "2026-10-10T11:40:00Z"},
+       {"book": "Retail book (illustrative)", "odds": {"H": 1.80, "U": 3.40, "B": 4.00}, "fetched_at": "2026-10-10T11:20:00Z"},
+       {"book": "Old quote (illustrative)", "odds": {"H": 2.20, "U": 3.30, "B": 3.50}, "fetched_at": "2026-10-10T02:00:00Z"}
+     ]},
+    {"slot": 2, "label": "Illustrative C - D",
+     "quotes": [
+       {"book": "Retail book (illustrative)", "odds": {"H": 2.40, "U": 3.30, "B": 3.00}, "fetched_at": "2026-10-10T11:20:00Z"}
+     ]},
+    {"slot": 3, "label": "Illustrative E - F (no odds found)", "quotes": []}
+  ]
+}

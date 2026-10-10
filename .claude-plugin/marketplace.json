@@ -12,7 +12,7 @@
       "name": "oddsen",
       "source": "./plugins/oddsen",
       "description": "Odds math, value checks, fixture scouting, staking and bet tracking for Oddsen.",
-      "version": "0.2.0"
+      "version": "0.3.0"
     }
   ]
 }
