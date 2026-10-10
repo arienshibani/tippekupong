@@ -1,0 +1,11 @@
+{
+  "name": "oddsen",
+  "version": "0.1.0",
+  "description": "Skills that help you find and track value bets on Oddsen (Norsk Tipping).",
+  "author": {
+    "name": "Ari Enshibani"
+  },
+  "repository": "https://github.com/arienshibani/oddsen-skills",
+  "license": "MIT",
+  "keywords": ["oddsen", "norsk-tipping", "betting", "value-bets", "odds"]
+}

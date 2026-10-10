@@ -1,0 +1,9 @@
+dist/
+.DS_Store
+__pycache__/
+*.pyc
+.env
+.env.*
+# Personal betting data stays local
+data/
+*.local.csv

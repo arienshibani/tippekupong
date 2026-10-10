@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate skills
+        run: python3 scripts/validate_skills.py
+      - name: Package skills
+        run: ./scripts/package-skills.sh
+      - name: Upload zips as build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: skills
+          path: dist/*.zip
+          if-no-files-found: ignore
+      - name: Attach zips to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          shopt -s nullglob
+          files=(dist/*.zip)
+          [ ${#files[@]} -eq 0 ] || gh release upload "${{ github.event.release.tag_name }}" "${files[@]}" --clobber
