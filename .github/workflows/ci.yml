@@ -20,6 +20,8 @@ jobs:
           python-version: "3.12"
       - name: Validate skills
         run: python3 scripts/validate_skills.py
+      - name: Run tests
+        run: python3 -m unittest discover -s tests -v
       - name: Package skills
         run: ./scripts/package-skills.sh
       - name: Upload zips as build artifact

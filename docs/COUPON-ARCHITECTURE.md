@@ -112,7 +112,7 @@ Every object that holds fetched data carries a `Source`. Team names are normalis
   ```
 - **Logic:**
   1. `max_rows = floor(budget / row_price)`. Start with the top outcome per match by a blended score: `score = (1-λ)·p + λ·p·value_ratio`, with λ from `risk` (0 safe, 0.5 balanced, 1 contrarian).
-  2. Marginal search: for each match, evaluate widening a single mark to a half cover, or a half cover to a full cover. Gain is `ΔP_cover / Δrows` (`shared/tipping-pool-math.md`), tie-broken by value ratio of the added outcome. Take the best step that still fits `max_rows`; repeat until nothing fits.
+  2. Choose cover sizes per match (1, 2 or 3 outcomes; each cover marks the top-n outcomes by score) to maximise `P_cover = Π (Σ p over marked)` subject to `Π n_i ≤ max_rows`. This is solved exactly by dynamic programming over the row count (`oddsen-tipping-coupon-optimizer/scripts/optimize.py`), so no greedy approximation is needed.
   3. Report three tiers (about 50 %, 100 % and, only if the user allows, up to the cap) so the user sees diminishing returns.
   4. Compute `p_all_correct = Π (Σ p_est over marked outcomes)`, row count and cost. Report relative `row_value_index`. Report an absolute EV only if pool size and takeout are known, and mark it uncertain.
 - **Complexity:** matches ≤ ~13 and three outcomes, so the search is trivially small. A brute-force check against the greedy result is a test.

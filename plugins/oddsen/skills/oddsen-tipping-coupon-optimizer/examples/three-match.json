@@ -1,0 +1,13 @@
+{
+  "row_price_nok": 1,
+  "budget_nok": 4,
+  "risk": "balanced",
+  "matches": [
+    {"slot": 1, "label": "Illustrative A - B",
+     "p": {"H": 0.55, "U": 0.25, "B": 0.20}, "q": {"H": 0.70, "U": 0.18, "B": 0.12}},
+    {"slot": 2, "label": "Illustrative C - D",
+     "p": {"H": 0.40, "U": 0.30, "B": 0.30}, "q": {"H": 0.45, "U": 0.27, "B": 0.28}},
+    {"slot": 3, "label": "Illustrative E - F",
+     "p": {"H": 0.30, "U": 0.28, "B": 0.42}, "q": {"H": 0.20, "U": 0.20, "B": 0.60}}
+  ]
+}

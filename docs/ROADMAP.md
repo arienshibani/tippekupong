@@ -83,4 +83,5 @@ Suggested build order: pool math + optimizer first (pure maths, testable offline
 
 | Skill | Status |
 |---|---|
-| All | Not started |
+| `oddsen-tipping-coupon-optimizer` (pool math in `shared/tipping-pool-math.md`) | Built, tested; needs testing in Claude.ai and Claude Code |
+| Everything else | Not started |

@@ -61,16 +61,17 @@ Single rows:
 
 `H,H,B` is the most likely single row but the most crowded: if it hits, you share the pool with many. `B,H,H` is unlikely but rarely shared.
 
-Covers, starting from `H,H,H` (1 row, `P_cover` 0.066):
+Covers, starting from the most likely single mark in each match, `H,H,B` (1 row, `P_cover` 0.0924). With one extra row of budget, each option doubles one match's covered mass:
 
-| Change | Rows | P_cover | ΔP per extra row |
-|---|---|---|---|
-| Match 3 → H+B | 2 | 0.1584 | +0.0924 |
-| Match 1 → H+U | 2 | 0.0960 | +0.0300 |
+| Change | Rows | P_cover |
+|---|---|---|
+| Match 1: add U (H+U, mass .55 → .80) | 2 | 0.1344 |
+| Match 2: add U or B (H+U, mass .40 → .70) | 2 | 0.1617 |
+| Match 3: add H (B+H, mass .42 → .72) | 2 | 0.1584 |
 
-With a one-extra-row budget, the cover goes on match 3 (the least dominant match), not match 1.
+The cover goes on match 2: it has the flattest top outcome (.40), so a second outcome adds the most relative coverage (× 1.75, against × 1.71 and × 1.45). Rule of thumb: widen where the top outcome is least dominant.
 
-Reproduce: `P_cover = Π (Σ p over marked outcomes)`, e.g. `(.55) × (.40) × (.30+.42) = 0.1584`.
+Reproduce: `P_cover = Π (Σ p over marked outcomes)`, e.g. `.55 × (.40+.30) × .42 = 0.1617`.
 
 ## What to state in outputs
 
