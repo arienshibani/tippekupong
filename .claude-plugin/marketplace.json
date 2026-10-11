@@ -1,17 +1,18 @@
 {
   "name": "tippekupong",
   "owner": {
-    "name": "Ari Enshibani"
+    "name": "Arien Shibani"
   },
   "metadata": {
-    "description": "Claude skills that build Norsk Tipping Tipping coupons from live data.",
+    "description": "Claude skills that build Norsk Tipping coupons from live data.",
     "version": "0.1.0"
   },
+  "icon": ".claude-plugin/sparkles.png",
   "plugins": [
     {
       "name": "tippekupong",
       "source": "./plugins/tippekupong",
-      "description": "Builds Norsk Tipping Tipping coupons from live data: fetches the round, estimates the matches, picks marks and covers for the best expected payout, and explains the result.",
+      "description": "Builds Norsk Tipping coupons from live data: fetches the round, estimates the matches, picks marks and covers for the best expected payout, and explains the result.",
       "version": "0.8.0"
     }
   ]
