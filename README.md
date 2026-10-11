@@ -18,7 +18,7 @@
 
 <p align="center"> A Claude plugin for filling out Norsk Tipping betting slips 🎲
     <br>
-    Tell it your budget. Get back the boxes to tick, or a link that ticks them for you.
+    Tell it your budget. Get back a link to a pre-filled slip.
 </p>
 
 ## About <a name = "about"></a>
@@ -27,15 +27,8 @@
 
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
-You need [Claude Code](https://code.claude.com) and Python 3
 
-
-```bash
-claude plugin marketplace add arienshibani/tippekupong
-claude plugin install tippekupong@tippekupong
-```
-
-Or with the [skills CLI](https://skills.sh), which also works for other agents:
+With the [skills CLI](https://skills.sh)
 
 ```bash
 npx skills add arienshibani/tippekupong
