@@ -6,7 +6,7 @@
   "metadata": {
     "description": "Claude skills that build Norsk Tipping coupons from live data.",
     "version": "0.1.0",
-    "icon": ".claude-plugin/sparkles.png"
+    "icon": ".claude-plugin/icon.png"
   },
   "plugins": [
     {
