@@ -14,6 +14,5 @@
       "description": "Builds Norsk Tipping coupons from live data: fetches the round, estimates the matches, picks marks and covers for the best expected payout, and explains the result.",
       "version": "0.8.0"
     }
-  ],
-  "icon": ".claude-plugin/icon.png"
+  ]
 }
