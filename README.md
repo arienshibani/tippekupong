@@ -30,12 +30,7 @@
 You need [Claude Code](https://code.claude.com) and Python 3
 
 
-```bash
-claude plugin marketplace add arienshibani/tippekupong
-claude plugin install tippekupong@tippekupong
-```
-
-Or with the [skills CLI](https://skills.sh), which also works for other agents:
+With the [skills CLI](https://skills.sh)
 
 ```bash
 npx skills add arienshibani/tippekupong
