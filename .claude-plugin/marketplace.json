@@ -5,8 +5,7 @@
   },
   "metadata": {
     "description": "Claude skills that build Norsk Tipping coupons from live data.",
-    "version": "0.1.0",
-    "icon": ".claude-plugin/icon.png"
+    "version": "0.1.0"
   },
   "plugins": [
     {
@@ -15,5 +14,6 @@
       "description": "Builds Norsk Tipping coupons from live data: fetches the round, estimates the matches, picks marks and covers for the best expected payout, and explains the result.",
       "version": "0.8.0"
     }
-  ]
+  ],
+  "icon": ".claude-plugin/icon.png"
 }
