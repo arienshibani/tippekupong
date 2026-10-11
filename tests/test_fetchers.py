@@ -297,6 +297,7 @@ class WholeChainThroughFiles(unittest.TestCase):
             self.assertIn("Sø. 14:30", report)           # Fredrikstad - Tromsø, 14:30 Oslo time
             self.assertNotIn("1/X/2", report)
             self.assertIn("rekker**", report)             # the "Ditt system" check line
+            self.assertRegex(report, r"Pre-filled coupon:\*\* https://www\.norsk-tipping\.no/sport/tipping/spill\?day=2&rows=%5B[HUB,]+%5D")
             self.assertNotIn("in line", report)
             self.assertNotIn("confidence medium", report)
             self.assertEqual(report.count("no bookmaker odds (expert tips"), 0)  # shortened in the table

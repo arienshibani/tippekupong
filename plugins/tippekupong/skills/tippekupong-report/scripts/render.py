@@ -429,7 +429,12 @@ def build(data):
                          + f": {e.get('reason', 'no usable market')}" + (f" ({detail})" if detail else ""))
         lines += ["", "The coupon still needs a mark for each. A single mark leaves the cost unchanged; a cover "
                   "multiplies it."]
-    if coupon.get("url"):
+    link = prefilled_link(coupon.get("day"), rec["marks"], excluded)
+    if link:
+        lines += ["", f"**Pre-filled coupon:** {link}", "",
+                  f"Open it, check that the boxes match the grid and that \"Ditt system\" says {rec['rows']} rekker, then buy it "
+                  "yourself on Norsk Tipping's page. Nothing is placed for you."]
+    elif coupon.get("url"):
         lines += ["", f"Public coupon page: {coupon['url']} (fill it in yourself; nothing is placed for you)."]
     else:
         lines += ["", "Fill the coupon in yourself; nothing is placed for you."]
@@ -538,7 +543,22 @@ def build(data):
             "chance_range": chance_range}
 
 
-DAY_PAGE = {"SUNDAY": "https://www.norsk-tipping.no/sport/tipping/spill?day=2"}
+COUPON_PAGE = "https://www.norsk-tipping.no/sport/tipping/spill"
+DAY_NUMBER = {"SATURDAY": 1, "SUNDAY": 2, "MIDWEEK": 3}  # the site's ?day= values (read from its Tipping page links)
+
+
+def prefilled_link(day, marks, excluded):
+    """Link to the coupon page with the boxes already ticked, or None when it cannot be complete.
+
+    The page accepts rows=[UB,H,...]: one entry per match in coupon order, written with the letters H, U, B.
+    """
+    number = DAY_NUMBER.get(str(day).upper())
+    slots = sorted(m["slot"] for m in marks)
+    if number is None or excluded or slots != list(range(1, len(slots) + 1)):
+        return None
+    ordered = sorted(marks, key=lambda m: m["slot"])
+    rows = ",".join("".join(k for k in OUTCOMES if k in m["outcomes"]) for m in ordered)
+    return f"{COUPON_PAGE}?day={number}&rows=%5B{rows}%5D"
 
 
 def _round_name(c):
@@ -576,7 +596,9 @@ def input_from_files(options, notes, whys, extra_sources):
     data = {"bankroll_nok": options.get("--bankroll"), "optimizer_result": built, "matches": value["matches"],
             "excluded": value.get("excluded") or [], "sources": sources, "notes": notes, "why": whys,
             "coupon": {"name": _round_name(c), "deadline": c["deadline"],
-                       "url": DAY_PAGE.get(c["day"], "https://www.norsk-tipping.no/sport/tipping")}}
+                       "url": f"{COUPON_PAGE}?day={DAY_NUMBER[c['day'].upper()]}" if c["day"].upper() in DAY_NUMBER
+                       else "https://www.norsk-tipping.no/sport/tipping",
+                       "day": c["day"]}}
     if "--cap-pct" in options:
         data["cap_pct"] = options["--cap-pct"]
     if "--now" in options:

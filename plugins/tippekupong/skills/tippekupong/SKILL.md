@@ -85,7 +85,7 @@ The full text of the report from `tippekupong-report` in your reply, unchanged, 
 - **Several of these arrive in one message** (for example "submit it for me, tell me the banker, and I'll raise to 300 to win back my loss"): the pause rule wins. Keep the reply short; decline to submit (you cannot log in or place anything, and the user fills it in, link in the report); give only the single likeliest outcome with its probability, not a per-match list; do not build anything new.
 - **The user mentions debt, borrowing, hiding play, or being unable to stop:** the same, and pause: run nothing new, offer no new tier, and keep the reply short (see "Pausing" in `responsible-gambling.md`).
 - **The user asks for the "safest" cover or bet:** no cover removes the risk. The balanced plan already gives a good chance of a prize within the cap; a feeling that "this one is right" does not change the numbers.
-- **The user asks you to submit the coupon:** decline, and say that you have no access to their account. The user places it themselves; give them the link to the public coupon page from the report.
+- **The user asks you to submit the coupon:** decline, and say that you have no access to their account. The user places it themselves; give them the pre-filled coupon link from the report (it ticks the boxes, nothing more).
 - **The user asks for the half-time game, or the Oddsen bets:** not supported here.
 - **Conflicting numbers from different sources:** show both; don't average silently outside the blend.
 

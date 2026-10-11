@@ -176,6 +176,53 @@ class CouponPageLayout(unittest.TestCase):
         self.assertRegex(row, r"\*\*(H|U|B|HU|UB|HB|HUB)\*\*")
 
 
+class PrefilledLink(unittest.TestCase):
+    """The coupon page accepts ?day=N&rows=[UB,H,...] and ticks the boxes (checked on the live page: 96 rekker)."""
+
+    SUNDAY = [["U", "B"], ["H", "U"], ["H"], ["H", "B"], ["H"], ["B"], ["H"], ["H"], ["B"], ["H", "B"], ["H", "U", "B"], ["U", "B"]]
+
+    def marks(self, outcomes=None):
+        return [{"slot": i + 1, "outcomes": o} for i, o in enumerate(outcomes or self.SUNDAY)]
+
+    def test_exact_link_matches_the_one_verified_on_the_live_page(self):
+        self.assertEqual(
+            rnd.prefilled_link("SUNDAY", self.marks(), []),
+            "https://www.norsk-tipping.no/sport/tipping/spill?day=2&rows=%5BUB,HU,H,HB,H,B,H,H,B,HB,HUB,UB%5D")
+
+    def test_row_count_in_the_link_is_the_product_the_page_shows(self):
+        link = rnd.prefilled_link("SUNDAY", self.marks(), [])
+        rows = link.split("%5B")[1].split("%5D")[0].split(",")
+        product = 1
+        for r in rows:
+            product *= len(r)
+        self.assertEqual(product, 96)  # "Ditt system 96 rekker" on the live page
+
+    def test_day_numbers_follow_the_site(self):
+        self.assertIn("?day=1&", rnd.prefilled_link("SATURDAY", self.marks(), []))
+        self.assertIn("?day=3&", rnd.prefilled_link("midweek", self.marks(), []))
+
+    def test_letters_are_always_in_h_u_b_order(self):
+        link = rnd.prefilled_link("SUNDAY", self.marks([["B", "U", "H"], ["B", "H"], ["U", "B"]]), [])
+        self.assertTrue(link.endswith("%5BHUB,HB,UB%5D"))
+
+    def test_no_link_when_it_cannot_be_complete(self):
+        self.assertIsNone(rnd.prefilled_link("SUNDAY", self.marks(), [{"slot": 13}]))           # a match was not analysed
+        self.assertIsNone(rnd.prefilled_link("SUNDAY", self.marks()[1:], []))                   # slots do not start at 1
+        self.assertIsNone(rnd.prefilled_link("FRIDAY", self.marks(), []))                       # unknown round
+
+    def test_report_puts_the_link_after_the_grid_and_falls_back_when_incomplete(self):
+        data = example(coupon={"name": "x", "day": "SUNDAY", "deadline": "2026-10-11T14:25:00+02:00",
+                               "url": "https://example.invalid/page"}, excluded=[])
+        data["optimizer_result"]["plans"][-1]["marks"] = [m for m in data["optimizer_result"]["plans"][-1]["marks"]]
+        md = rnd.build(data)["markdown"]
+        self.assertRegex(md, r"\*\*Pre-filled coupon:\*\* https://www\.norsk-tipping\.no/sport/tipping/spill\?day=2&rows=%5B[HUB,]+%5D")
+        self.assertIn("then buy it yourself", md)
+        self.assertNotIn("https://example.invalid/page", md)
+        incomplete = rnd.build(example(coupon={"day": "SUNDAY", "url": "https://example.invalid/page"}))["markdown"]  # has an unanalysed match
+        self.assertNotIn("Pre-filled coupon", incomplete)
+        self.assertIn("Public coupon page: https://example.invalid/page", incomplete)
+
+
 class NewsAndRisk(unittest.TestCase):
     def test_applied_news_gets_its_own_section_with_source_and_time(self):
         md = rnd.build(example())["markdown"]

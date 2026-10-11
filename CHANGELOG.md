@@ -4,6 +4,12 @@ Releases are made by `.github/workflows/release.yml` when a new version lands on
 
 ## Unreleased
 
+## 0.8.0 - 2026-10-11
+
+### Added
+
+- The report ends with a **pre-filled coupon link**: Norsk Tipping's coupon page opens with every box already ticked, so you only check it against the grid and buy it yourself. Falls back to the plain coupon page if a match could not be analysed.
+
 ## 0.7.1 - 2026-10-11
 
 First public release.

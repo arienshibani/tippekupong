@@ -1,37 +1,54 @@
-_A claude plugin for filling out Norsk Tipping betting slips_ 🎲
+<!-- Logo: add docs/logo.png and uncomment.
+<p align="center">
+  <a href="https://github.com/arienshibani/tippekupong" rel="noopener">
+    <img width="200px" height="200px" src="docs/logo.png" alt="Tippekupong logo">
+  </a>
+</p>
+-->
 
-[![skills.sh](https://skills.sh/b/arienshibani/tippekupong)](https://skills.sh/arienshibani/tippekupong)
+<h3 align="center">Tippekupong 💸</h3>
+
+<div align="center">
+
+  [![skills.sh](https://skills.sh/b/arienshibani/tippekupong)](https://skills.sh/arienshibani/tippekupong)
+
+</div>
+
+---
+
+<p align="center"> A Claude plugin for filling out Norsk Tipping betting slips 🎲
+    <br>
+    Tell it your budget. Get back the boxes to tick, or a link that ticks them for you.
+</p>
+
+## About <a name = "about"></a>
+
+**The math is deterministic**: payout rules, probabilities and the search for the best marks run as small Python scripts. **Claude does the judgement parts**: understanding your request, asking for budget and bankroll, checking team news, writing the short summary in Norwegian, and applying guardrails.
 
 
-# Tippekupong
+## 🏁 Getting Started <a name = "getting_started"></a>
+You need [Claude Code](https://code.claude.com) and Python 3
 
-The math is deterministic: payout rules, probabilities, the search for the best marks, etc. **Claude does the judgement parts.** understanding your request, asking for budget and bankroll, checking team news, writing the short summary in Norwegian, and applying guardrails.
-
-
-## Install
-
-**1. Get the plugin.** In Claude Code:
 
 ```bash
 claude plugin marketplace add arienshibani/tippekupong
 claude plugin install tippekupong@tippekupong
 ```
 
-Or with the [skills CLI](https://skills.sh), which installs the skills for Claude Code and other agents:
+Or with the [skills CLI](https://skills.sh), which also works for other agents:
 
 ```bash
 npx skills add arienshibani/tippekupong
 ```
 
-**2. Start a new Claude Code session.** Sessions that were already open do not pick up new plugins.
-
-## Usage
+## 🎈 Usage <a name="usage"></a>
+Ask for a coupon:
 
 ```
-"Bygg kupongen for søndag. Budsjett 50 kr, bankroll 3000 kr."
+Bygg kupongen for søndag. Budsjett 50 kr, bankroll 3000 kr.
 ```
 
-Within a minute Claude answers with a short summary and the full report.
+Within a minute Claude answers with a short summary and the full report. This is the real output, shortened, for Sunday 11 October 2026:
 
 ```
 Recommended: 48 rows, 48 NOK = 1.60 % of bankroll (cap 2 %)
@@ -62,38 +79,46 @@ Copy into your own coupon (■ = tick the box):
 H = hjemmeseier, U = uavgjort, B = borteseier. After you tick the boxes,
 "Ditt system" on the page should say 48 rekker (48 kr).
 
+Here is your pre-filled betting slip 🔗 Open it, and login to purchase it
 
-Heres your pre-filled betting slip 🔗 
-https://www.norsk-tipping.no/sport/tipping/spill?day=2&rows=%5BUB,HU,H,HB,H,B,H,H,B,HB,HUB,UB%5D
+https://www.norsk-tipping.no/sport/tipping/spill?day=2&rows=%5BUB,HB,H,UB,H,B,H,H,B,HB,HUB,B%5D
 ```
+
 The full report also has a reason and a risk note for every match, a second strategy for the same budget, a cheaper tier, and every source with its time.
 
-## Skills
-
-The plugin currently contain the following skills:
-
-- **[tippekupong](plugins/tippekupong/skills/tippekupong/SKILL.md)**: asks for round, budget and bankroll, runs everything below, and explains the result in your language.
-- **[tippekupong-fixtures](plugins/tippekupong/skills/tippekupong-fixtures/SKILL.md)**: reads the open rounds from Norsk Tipping's public site data: matches, deadline, pool, row price, public split and expert tips.
-- **[tippekupong-odds](plugins/tippekupong/skills/tippekupong-odds/SKILL.md)**: finds bookmaker odds for the matches the free football-data.co.uk file covers, and flags the rest.
-- **[tippekupong-probabilities](plugins/tippekupong/skills/tippekupong-probabilities/SKILL.md)**: strips the bookmaker margin and blends odds, expert tips and the public split into one probability per match.
-- **[tippekupong-news](plugins/tippekupong/skills/tippekupong-news/SKILL.md)**: applies team news within strict caps and checks it against what the market already knew.
-- **[tippekupong-optimizer](plugins/tippekupong/skills/tippekupong-optimizer/SKILL.md)**: builds the marks and covers for the best expected payout over the 12, 11 and 10-correct prizes.
-- **[tippekupong-report](plugins/tippekupong/skills/tippekupong-report/SKILL.md)**: writes the report in the coupon page's layout, with reasons, risks, cost as a share of your bankroll and the comparison.
-
-Prize rules and evidence: [shared/tipping-payout-rules.md](shared/tipping-payout-rules.md). How it all fits: [docs/COUPON-ARCHITECTURE.md](docs/COUPON-ARCHITECTURE.md).
 
 
-## Development
+## ⚙️ How It Works <a name = "how_it_works"></a>
+1. **Fetch the round** from Norsk Tipping's public site data: matches, deadline, pool, row price (1 kr), the public split and the expert tips.
+2. **Add bookmaker odds** from football-data.co.uk where its free file covers the match.
+3. **Blend** odds, expert tips and the public split into one probability per match.
+4. **Apply team news** you give it, checked against what the market already knew.
+5. **Build the coupon** with the best expected payout across the prizes for 12, 11 and 10 correct, while keeping a good chance of winning something.
+6. **Write the report** in the layout of the coupon page, with the pre-filled link.
 
+Design and decisions: [docs/COUPON-ARCHITECTURE.md](docs/COUPON-ARCHITECTURE.md). Test rounds with a fresh Claude and the fixes they led to: [docs/test-runs/](docs/test-runs/).
+
+## 🔧 Tests <a name = "tests"></a>
 ```bash
-python3 -m unittest discover -s tests     # 182 tests
-python3 scripts/validate_skills.py
+python3 -m unittest discover -s tests     # unit tests
+python3 scripts/validate_skills.py        # skill frontmatter and layout
 python3 scripts/sync_references.py        # after editing anything in shared/
 ./scripts/package-skills.sh               # zips into dist/
 ```
 
-Conventions are in [CLAUDE.md](CLAUDE.md).
+The tests include the payout rule checked against 60 real rounds, the crowd model against real winner counts, the Monte Carlo evaluator against full enumeration, and the whole chain from live-shaped data to report. Conventions for contributing are in [CLAUDE.md](CLAUDE.md); issues and pull requests are welcome.
 
-## Play responsibly ✨
+## 🚀 Releases <a name = "releases"></a>
+A GitHub release is published automatically when a new version lands on `main`: the workflow runs the checks, builds the zips, tags the version and uses the [changelog](CHANGELOG.md) as the notes. Each release attaches `tippekupong-plugin.zip` (the whole plugin) and one zip per skill. See [Releases](https://github.com/arienshibani/tippekupong/releases).
 
-Do not bet money you can not afford to loose. Not affiliated with Norsk Tipping. Not financial advice. Rules and odds change; check Norsk Tipping's own pages. [MIT license](LICENSE).
+
+## ⛏️ Built Using <a name = "built_using"></a>
+- [Claude Code](https://code.claude.com) - Plugin and skills runtime
+- [Python 3](https://www.python.org/) - The maths, standard library only
+- [Norsk Tipping](https://www.norsk-tipping.no/sport/tipping) - Public Tipping data: rounds, public split, expert tips, results
+- [football-data.co.uk](https://www.football-data.co.uk/) - Free bookmaker odds
+- [GitHub Actions](https://github.com/features/actions) - Tests and releases
+
+---
+
+**Play responsibly ✨**  Do not bet money you cannot afford to lose.
