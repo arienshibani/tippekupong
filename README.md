@@ -28,6 +28,13 @@
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
+Using the Claude CLI
+
+```bash
+claude plugin marketplace add arienshibani/tippekupong
+claude plugin install tippekupong@tippekupong
+```
+
 With the [skills CLI](https://skills.sh)
 
 ```bash
